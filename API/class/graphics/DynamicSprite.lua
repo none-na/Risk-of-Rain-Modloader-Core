@@ -19,6 +19,11 @@ function lookup:delete()
 	is_valid[self] = false
 end
 
+function lookup:isValid() 
+	if not children[self] then methodCallError("DynamicSprite:isValid", self) end 
+	return is_valid[self] and true or false 
+end 
+ 
 function lookup:finalise(name)
 	if not children[self] then methodCallError("DynamicSprite:finalise", self) end
 	if type(name) ~= "string" then typeCheckError("DynamicSprite:finalise", 1, "name", "string", name) end
