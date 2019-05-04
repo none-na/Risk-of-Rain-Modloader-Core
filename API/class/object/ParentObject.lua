@@ -43,7 +43,6 @@ do
 	create("flyingEnemies", "pFlying")
 	create("bosses", "pBoss")
 
-	create("allies", "pFriend")
 	create("drones", "pDrone")
 
 	-- MapObjects
