@@ -147,7 +147,7 @@ do
 		end
 		-- Type checking
 		local is_sprite = isA(image, "BaseSprite")
-		if not is_sprite and imgtypeOf(image) ~= "Surface" then
+		if not is_sprite and typeOf(image) ~= "Surface" then
 			argError("image", "Sprite or Surface", image)
 		end
 		
