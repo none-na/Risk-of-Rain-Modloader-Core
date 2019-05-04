@@ -1,0 +1,4 @@
+local s = mods.modenv
+s.DAMAGER_NO_RECALC = 1
+s.DAMAGER_NO_PROC = 2
+s.DAMAGER_BULLET_PIERCE = 4
