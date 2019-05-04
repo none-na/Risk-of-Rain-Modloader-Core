@@ -3,7 +3,6 @@ local type = type
 local typeOf = typeOf
 -- Create class
 local static, lookup, meta, ids, special, children = NewClass("DynamicSprite", true, SpriteUtil.baseClass)
-meta.__tostring = __tostring_default_namespace
 
 local is_valid = setmetatable({}, {__mode = "k"})
 
