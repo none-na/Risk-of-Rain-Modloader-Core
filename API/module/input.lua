@@ -38,6 +38,14 @@ function input.checkControl(control, player)
 	return GML.control_check_state(tc, player and inst_ids[player] or -1)
 end
 
+function input.getButtonKey(control, player)
+	if type(control) ~= "string" then typeCheckError("input.getButtonKey", 1, "control", "string", control) end
+	if player ~= nil and typeOf(player) ~= "PlayerInstance" then typeCheckError("input.getButtonKey", 2, "player", "PlayerInstance or nil", player) end
+	local tc = keybindIDs[string.lower(control)]
+	if not tc then error("'" .. control .. "' is not a known control", 2) end
+    return ffi.string(GML.control_string(player and inst_ids[player] or -1, tc))
+end
+
 ------------------
 ---- KEYBOARD ----
 ------------------
