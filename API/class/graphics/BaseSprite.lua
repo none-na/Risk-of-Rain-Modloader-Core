@@ -19,6 +19,9 @@ do
 	local function makeProperty(name, getter)
 		return {
 			get = function(self)
+				if not SpriteUtil.isValid(self) then 
+					error("attempt to access invalid DynamicSprite reference", 2) 
+				end 
 				local props = sprite_properties[self]
 				if props[name] then
 					return props[name]
