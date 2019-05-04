@@ -27,6 +27,7 @@ end
 function lookup:finalise(name)
 	if not children[self] then methodCallError("DynamicSprite:finalise", self) end
 	if type(name) ~= "string" then typeCheckError("DynamicSprite:finalise", 1, "name", "string", name) end
+	verifyCall(self)
 	local context = GetModContext()
 	contextVerify(SpriteUtil.allSprites, name, context, "Sprite")
 	local new = SpriteUtil.createFromID(ids[self], context, name)
@@ -38,6 +39,7 @@ lookup.finalize = lookup.finalise
 function lookup:addFrame(source, x, y, w, h)
 	if not children[self] then methodCallError("DynamicSprite:addFrame", self) end
 	if typeOf(source) ~= "Surface" then typeCheckError("DynamicSprite:addFrame", 1, "source", "Surface", source) end
+	verifyCall(self)
 	if x ~= nil and type(x) ~= "number" then typeCheckError("DynamicSprite:addFrame", 2, "x", "number or nil", x) end
 	if y ~= nil and type(y) ~= "number" then typeCheckError("DynamicSprite:addFrame", 3, "y", "number or nil", y) end
 	if w ~= nil and type(w) ~= "number" then typeCheckError("DynamicSprite:addFrame", 4, "w", "number or nil", w) end
