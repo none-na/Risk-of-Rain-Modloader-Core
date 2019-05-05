@@ -187,8 +187,8 @@ lookup.width = {
 	end,
 	set = function(t, v)
 		if typeOf(v) ~= "number" then fieldTypeError("Surface.width", "number", v) end
-		verifySurfaceCall()
-		GML.surface_resize(ids[self], v, surface_height[t])
+		verifySurfaceCall(t)
+		GML.surface_resize(ids[t], v, surface_height[t])
 		surface_width[t] = v
 	end
 }
@@ -201,8 +201,8 @@ lookup.height = {
 	end,
 	set = function(t, v)
 		if typeOf(v) ~= "number" then fieldTypeError("Surface.height", "number", v) end
-		verifySurfaceCall()
-		GML.surface_resize(ids[self], surface_width[t], v)
+		verifySurfaceCall(t)
+		GML.surface_resize(ids[t], surface_width[t], v)
 		surface_height[t] = v
 	end
 }
