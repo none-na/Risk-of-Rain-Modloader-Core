@@ -114,6 +114,8 @@ require "api/defaultCallbacks"
 
 require "api/modConstants"
 
+require "api/class/Projectile"
+
 mods.modenv.print = print
 mods.modenv.log = log
 
