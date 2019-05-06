@@ -5,8 +5,9 @@ local iwrap = GMInstance.iwrap
 
 -- Class
 local static, lookup, meta, ids, special, childeren = NewClass("Projectile", false)
---???
 meta.__tostring = __tostring_default_namespace
+
+-- Creation
 local projectile_number = 0
 local all_projectiles = {}
 
@@ -21,11 +22,11 @@ local object_to_projectile           = {}
 -- Callbacks
 local projectile_callbacks           = {}
 local projectile_collision_callbacks = {}
-local group_cache = {}
-local projectile_current_collisions = {}
-local projectile_initialized = {}
+local group_cache                    = {}
+local projectile_current_collisions  = {}
+local projectile_initialized         = {}
 
--- Exports
+-- Environment
 Projectile = {}
 mods.modenv.Projectile = Projectile
 
@@ -87,6 +88,7 @@ do
 				projectile_current_collisions[projectileInstance] = {}
 
 				projectileInstance:set("dead", 0)
+				projectileInstance:set("life", 0)
 
 				projectileInstance:set("vx", 0)
 				projectileInstance:set("vy", 0)
