@@ -157,6 +157,8 @@ require "api/defaultCallbacks"
 
 require "api/modConstants"
 
+require "api/class/Projectile"
+
 for k, v in pairs(API) do
 	mods.modenv[k] = v
 	_G[k] = v
