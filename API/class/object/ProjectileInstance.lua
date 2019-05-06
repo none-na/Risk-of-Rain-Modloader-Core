@@ -12,37 +12,35 @@ GMInstance.ProjectileInstance = static
 
 do
 	-- Fire functions
-	function lookup:fireBullet(direction, distance, damage, hitSprite, properties, x, y)
+	function lookup:fireBullet(x, y, direction, distance, damage, hitSprite, properties)
 		if not childeren[self] then methodCallError("ProjectileInstance:fireBullet", self) end
-		if type(direction)   ~= "number" then typeCheckError("ProjectileInstance:fireBullet", 1, "direction", "number", direction) end
-		if type(distance)    ~= "number" then typeCheckError("ProjectileInstance:fireBullet", 2, "distance",  "number",  distance) end
-		if type(damage)      ~= "number" then typeCheckError("ProjectileInstance:fireBullet", 3, "damage",    "number",    damage) end
-		if typeOf(hitSprite) ~= "Sprite" and hitSprite  ~= nil then typeCheckError("ProjectileInstance:fireBullet", 4, "hitSprite",  "Sprite or nil",  hitSprite) end
-		if tye(properties)   ~= "number" and properties ~= nil then typeCheckError("ProjectileInstance:fireBullet", 5, "properties", "number or nil", properties) end
-		if type(x)           ~= "number" and x          ~= nil then typeCheckError("ProjectileInstance:fireBullet", 6, "x",          "number or nil",          x) end
-		if type(y)           ~= "number" and y          ~= nil then typeCheckError("ProjectileInstance:fireBullet", 7, "y",          "number or nil",          y) end
-		--???
+		if type(x)           ~= "number" then typeCheckError("ProjectileInstance:fireBullet", 1, "x",         "number",         x) end
+		if type(y)           ~= "number" then typeCheckError("ProjectileInstance:fireBullet", 2, "y",         "number",         y) end
+		if type(direction)   ~= "number" then typeCheckError("ProjectileInstance:fireBullet", 3, "direction", "number", direction) end
+		if type(distance)    ~= "number" then typeCheckError("ProjectileInstance:fireBullet", 4, "distance",  "number",  distance) end
+		if type(damage)      ~= "number" then typeCheckError("ProjectileInstance:fireBullet", 5, "damage",    "number",    damage) end
+		if typeOf(hitSprite) ~= "Sprite" and hitSprite  ~= nil then typeCheckError("ProjectileInstance:fireBullet", 6, "hitSprite",  "Sprite or nil",  hitSprite) end
+		if tye(properties)   ~= "number" and properties ~= nil then typeCheckError("ProjectileInstance:fireBullet", 7, "properties", "number or nil", properties) end
 		verifyInstCall(ids[self])
 		
 		local ths = hitSprite and SpriteUtil.toID(hitSprite) or -1
-		return iwrap(GML.fire_bullet(self:get("parent"), x or self.x, y or self.y, direction, damage, ths, properties or 0))
+		return iwrap(GML.fire_bullet(self:get("parent"), x, y, direction, damage, ths, properties or 0))
 	end
 
-	function lookup:fireExplosion(width, height, damage, explosionSprite, hitSprite, properties, x, y)
+	function lookup:fireExplosion(x, y, width, height, damage, explosionSprite, hitSprite, properties)
 		if not childeren[self] then methodCallError("ProjectileInstance:fireExplosion", self) end
-		if type(width)             ~= "number" then typeCheckError("ProjectileInstance:fireExplosion", 1, "width",  "number",  width) end
-		if type(height)            ~= "number" then typeCheckError("ProjectileInstance:fireExplosion", 2, "height", "number", height) end
-		if type(damage)            ~= "number" then typeCheckError("ProjectileInstance:fireExplosion", 3, "damage", "number", damage) end
-		if typeOf(explosionSprite) ~= "Sprite" and explosionSprite ~= nil then typeCheckError("ProjectileInstance:fireExplosion", 4, "explosionSprite", "Sprite or nil", explosionSprite) end
-		if typeOf(hitSprite)       ~= "Sprite" and hitSprite       ~= nil then typeCheckError("ProjectileInstance:fireExplosion", 5, "hitSprite",       "Sprite or nil",       hitSprite) end
-		if type(properties)        ~= "number" and properties      ~= nil then typeCheckError("ProjectileInstance:fireExplosion", 6, "properties",      "number or nil",      properties) end
-		if type(x)                 ~= "number" and x               ~= nil then typeCheckError("ProjectileInstance:fireExplosion", 6, "x",               "number or nil",               x) end
-		if type(y)                 ~= "number" and y               ~= nil then typeCheckError("ProjectileInstance:fireExplosion", 7, "y",               "number or nil",               y) end
-		--???
+		if type(x)                 ~= "number" then typeCheckError("ProjectileInstance:fireExplosion", 1, "x",      "number",      x) end
+		if type(y)                 ~= "number" then typeCheckError("ProjectileInstance:fireExplosion", 2, "y",      "number",      y) end
+		if type(width)             ~= "number" then typeCheckError("ProjectileInstance:fireExplosion", 3, "width",  "number",  width) end
+		if type(height)            ~= "number" then typeCheckError("ProjectileInstance:fireExplosion", 4, "height", "number", height) end
+		if type(damage)            ~= "number" then typeCheckError("ProjectileInstance:fireExplosion", 5, "damage", "number", damage) end
+		if typeOf(explosionSprite) ~= "Sprite" and explosionSprite ~= nil then typeCheckError("ProjectileInstance:fireExplosion", 6, "explosionSprite", "Sprite or nil", explosionSprite) end
+		if typeOf(hitSprite)       ~= "Sprite" and hitSprite       ~= nil then typeCheckError("ProjectileInstance:fireExplosion", 7, "hitSprite",       "Sprite or nil",       hitSprite) end
+		if type(properties)        ~= "number" and properties      ~= nil then typeCheckError("ProjectileInstance:fireExplosion", 8, "properties",      "number or nil",      properties) end
 		verifyInstCall(ids[self])
 		
 		local tes, ths = (explosionSprite and SpriteUtil.toID(explosionSprite) or -1), (hitSprite and SpriteUtil.toID(hitSprite) or -1)
-		return iwrap(GML.fire_explosion(self:get("parent"), x or self.x, y or self.y, width, height, damage, tes, ths, properties or 0))
+		return iwrap(GML.fire_explosion(self:get("parent"), x, y, width, height, damage, tes, ths, properties or 0))
 	end
 	
 	-- Kill signalling
