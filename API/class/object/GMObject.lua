@@ -196,7 +196,8 @@ object_type_to_wrapper = {
 	mapObject = GMInstance.Instance.new,
 	damager = GMInstance.DamagerInstance.new,
 	actor = GMInstance.ActorInstance.new,
-	player = GMInstance.PlayerInstance.new
+	player = GMInstance.PlayerInstance.new,
+	projectile = GMInstance.ProjectileInstance.new,
 }
 
 -- Wrap basegame objects

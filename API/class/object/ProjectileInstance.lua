@@ -7,7 +7,6 @@ local verifyInstCall = GMInstance.verifyInstCall
 
 -- Class
 local static, lookup, meta, ids, special, childeren = NewClass("ProjectileInstance", true, GMInstance.Instance)
---???
 meta.__tostring = __tostring_default_instance
 GMInstance.ProjectileInstance = static
 
@@ -57,7 +56,7 @@ do
 		
 		if deathSprite then fastSet(ids[self], "sprite_index", SpriteUtil.toID(deathSprite)) end
 		
-		fastSet(ids[self], "death_signal", signal or 1)
+		self:set("death_signal", signal or 1)
 	end
 	
 	-- Custom set function
