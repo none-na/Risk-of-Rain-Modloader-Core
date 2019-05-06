@@ -79,11 +79,11 @@ do
 		group_cache[new] = {}
 		
 		newObj:addCallback("create", function()
-			triggerCallback(new, "onInit", projectileInstance)
+			triggerCallback(new, "init", projectileInstance)
 		end)
 		newObj:addCallback("step", function(projectileInstance)
 		
-			-- Initialization and onCreate
+			-- Initialization and create
 			-- The reason is that the "create" callback is fired before the "fire" method can finish
 			if not projectile_initialized[projectileInstance] then
 				projectile_current_collisions[projectileInstance] = {}
@@ -98,7 +98,7 @@ do
 
 				projectile_initialized[projectileInstance] = true
 				
-				triggerCallback(new, "onCreate", projectileInstance)
+				triggerCallback(new, "create", projectileInstance)
 			end
 			
 			-- Checking if the projectile should be dead
@@ -108,7 +108,7 @@ do
 				projectileInstance:set("life", 0)
 				projectileInstance:set("dead", _signal)
 				projectileInstance:set("death_signal", nil)
-				triggerCallback(new, "onDeath", projectileInstance)
+				triggerCallback(new, "death", projectileInstance)
 			end
 			
 			-- Handling life and post-death state
@@ -129,7 +129,7 @@ do
 			if projectileInstance:get("dead") > 0 then return nil end
 			
 			-- onStep
-			triggerCallback(new, "onStep", projectileInstance)
+			triggerCallback(new, "step", projectileInstance)
 			
 			-- Collision storage and callbacks for groups
 			for groupName,group in pairs(group_cache[new]) do
@@ -145,13 +145,13 @@ do
 						local _ydirection = _vcollision and math.sign(_vy) or 0
 						if (_hcollision or _vcollision) then
 							if not projectile_current_collisions[projectileInstance][groupName][instance] then
-								triggerCollisionCallback(new, "onEntry", groupName, projectileInstance, instance, _xdirection, _ydirection)
+								triggerCollisionCallback(new, "entry", groupName, projectileInstance, instance, _xdirection, _ydirection)
 							end
-							triggerCollisionCallback(new, "onCollide", groupName, projectileInstance)
+							triggerCollisionCallback(new, "collide", groupName, projectileInstance)
 							projectile_current_collisions[projectileInstance][groupName][instance] = true
 						else
 							if projectile_current_collisions[projectileInstance][groupName][instance] then
-								triggerCollisionCallback(new, "onExit", groupName, projectileInstance, instance, _xdirection, _ydirection)
+								triggerCollisionCallback(new, "exit", groupName, projectileInstance, instance, _xdirection, _ydirection)
 							end
 							projectile_current_collisions[projectileInstance][groupName][instance] = nil
 						end
@@ -167,13 +167,13 @@ do
 			local _ydirection = _vcollision and math.sign(_vy) or 0
 			if (_hcollision or _vcollision) then
 				if not projectile_current_collisions[projectileInstance]["map"] then
-					triggerCollisionCallback(new, "onEntry", "map", projectileInstance, _xdirection, _ydirection)
+					triggerCollisionCallback(new, "entry", "map", projectileInstance, _xdirection, _ydirection)
 				end
-				triggerCollisionCallback(new, "onCollide", "map", projectileInstance)
+				triggerCollisionCallback(new, "collide", "map", projectileInstance)
 				projectile_current_collisions[projectileInstance]["map"] = true
 			else
 				if projectile_current_collisions[projectileInstance]["map"] then
-					triggerCollisionCallback(new, "onExit", "map", projectileInstance, _xdirection, _ydirection)
+					triggerCollisionCallback(new, "exit", "map", projectileInstance, _xdirection, _ydirection)
 				end
 				projectile_current_collisions[projectileInstance]["map"] = nil
 			end
@@ -216,10 +216,10 @@ end
 do
 	-- Callbacks functions
 	local callbackNames = {
-		["onInit"] = true,
-		["onCreate"] = true,
-		["onDeath"] = true,
-		["onStep"] = true,
+		["init"] = true,
+		["create"] = true,
+		["death"] = true,
+		["step"] = true,
 	}
 	function lookup:addCallback(callback, bind)
 		if not childeren[self] then methodCallError("Projectile:addCallback", self) end
@@ -232,9 +232,9 @@ do
 	end
 
 	local groupCallbackNames = {
-		["onEntry"] = true,   -- projectileInstance [otherInstance] xdirection ydirection
-		["onExit"] = true,    -- projectileInstance [otherInstance] xdirection ydirection
-		["onCollide"] = true, -- projectileInstance [otherInstance]
+		["entry"] = true,   -- projectileInstance [otherInstance] xdirection ydirection
+		["exit"] = true,    -- projectileInstance [otherInstance] xdirection ydirection
+		["collide"] = true, -- projectileInstance [otherInstance]
 	}
 	function lookup:addCollisionCallback(callback, group, bind)
 		if not childeren[self] then methodCallError("Projectile:addCollisionCallback", self) end
@@ -243,7 +243,7 @@ do
 		if type(bind)     ~= "function" then typeCheckError("Projectile:addCollisionCallback", 3, "bind",     "function",   bind) end
 		
 		local group_name = string.lower(group)
-		if group_name ~= "map" then group = ObjectGroup.find(group) end
+		if group_name ~= "map" then group = ParentObject.find(group) end
 		
 		--???
 		if group == nil then error("Invalid group name for Projectile") end
