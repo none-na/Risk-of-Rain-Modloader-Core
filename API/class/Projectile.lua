@@ -84,6 +84,7 @@ do
 		newObj:addCallback("step", function(projectileInstance)
 		
 			-- Initialization and onCreate
+			-- The reason is that the "create" callback is fired before the "fire" method can finish
 			if not projectile_initialized[projectileInstance] then
 				projectile_current_collisions[projectileInstance] = {}
 
@@ -206,7 +207,7 @@ do
 		return object_to_projectile[object]
 	end
 	function Projectile.fromInstance(instance)
-		if not isA(instance, "Instance") then typeCheckError("Projectile.fromInstance", 1, "instance", "Instance", instance) end
+		if not isA(instance, "ProjectileInstance") then typeCheckError("Projectile.fromInstance", 1, "instance", "Instance", instance) end
 		return object_to_projectile[instance:getObject()]
 	end
 	setmetatable(Projectile, { __call = function(t, name) return Projectile.new(name) end } )
