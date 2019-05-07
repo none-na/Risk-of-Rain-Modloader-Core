@@ -154,6 +154,10 @@ do
 			end
 		end)
 		
+		newObj:addCallback("draw", function(projectileInstance)
+			triggerCallback(new, "draw", projectileInstance)
+		end)
+		
 		newObj:addCallback("destroy", function(projectileInstance)
 			-- Clean-up
 			projectile_current_collisions[projectileInstance] = nil
@@ -184,10 +188,11 @@ end
 do
 	-- Callbacks functions
 	local callbackNames = {
-		["create"] = true,
-		["death"] = true,
-		["step"] = true,
+		["create"]  = true,
+		["death"]   = true,
+		["step"]    = true,
 		["destroy"] = true,
+		["draw"]    = true,
 	}
 	function lookup:addCallback(callback, bind)
 		if not childeren[self] then methodCallError("Projectile:addCallback", self) end
