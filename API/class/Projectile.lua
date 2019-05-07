@@ -126,7 +126,7 @@ do
 								if projectileInstance:get("death_signal") then return nil end
 								projectile_current_collisions[projectileInstance][object][instance] = true
 							end
-							triggerCollisionCallback(new, "collide", object, projectileInstance)
+							triggerCollisionCallback(new, "collide", object, projectileInstance, instance)
 							if projectileInstance:get("death_signal") then return nil end
 						elseif projectile_current_collisions[projectileInstance][object][instance] then
 							triggerCollisionCallback(new, "exit", object, projectileInstance, instance)
