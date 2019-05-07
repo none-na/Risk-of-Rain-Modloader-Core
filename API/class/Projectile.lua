@@ -79,8 +79,8 @@ do
 		object_to_projectile[newObj] = new
 		object_cache[new] = {}
 		
-		newObj:addCallback("step", function(projectileInstance)
-			-- Checking if the projectile should be dead
+		newObj:addCallback("step", function(projectileInstance)	
+			-- Checking if the projectile should be dead and isn't
 			local _signal = projectileInstance:get("death_signal")
 			if _signal and (projectileInstance:get("dead") <= 0) then
 				projectileInstance.subimage = 1
@@ -91,16 +91,18 @@ do
 			end
 			
 			-- Handling life and post-death state
-			local _life = projectileInstance:get("life") - 1
-			projectileInstance:set("life", _life)
-			if _life == 0 then
-				if projectileInstance:get("dead") <= 0 then
+			local _life = projectileInstance:get("life")
+			if _life then
+				_life = _life - 1
+				projectileInstance:set("life", _life)
+				if (_life <= 0) and (projectileInstance:get("dead") <= 0) then
 					projectileInstance:kill(new.deathSprite)
-				else
-					if (not projectileInstance:get("death_sprite")) or (_life <= (-(((projectileInstance.sprite or { frames = 1 }).frames) / (projectileInstance.spriteSpeed or 1)) - 1)) then
-						projectileInstance:destroy()
-						return nil
-					end
+				end
+			end
+			if projectileInstance:get("dead") > 0 then
+				if (not projectileInstance:get("death_sprite")) or (_life <= (-(((projectileInstance.sprite or { frames = 1 }).frames) / (projectileInstance.spriteSpeed or 1)) - 1)) then
+					projectileInstance:destroy()
+					return nil
 				end
 			end
 			
@@ -266,7 +268,6 @@ do
 		:set("parent", parent.id)
 		:set("team", parent:get("team"))
 		:set("dead", 0)
-		:set("life", -1)
 		
 		projectileInstance.xscale = (direction ~= nil and direction ~= 0) and math.sign(direction) or (parent.xscale ~= 0 and math.sign(parent.xscale) or 1)
 		projectileInstance:set("direction", 90 * (1 - projectileInstance.xscale))
