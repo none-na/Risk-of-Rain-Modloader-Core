@@ -60,7 +60,10 @@ do
 		if signal and (signal <= 0) then error("Non-positive signal for ProjectileInstance:kill") end
 		verifyInstCall(ids[self])
 		
-		if deathSprite then fastSet(ids[self], "sprite_index", SpriteUtil.toID(deathSprite)) end
+		if deathSprite then
+			fastSet(ids[self], "sprite_index", SpriteUtil.toID(deathSprite))
+			self:set("death_sprite", 1)
+		end
 		
 		self:set("death_signal", signal or 1)
 	end
@@ -74,6 +77,7 @@ do
 	}
 	local prohibited_types = {
 		death_signal = "string",
+		death_sprite = "string",
 	}
 	function lookup:set(varName, value)
 		if allowed_types[varName]    and type(value) ~= allowed_types[varName]    then typeCheckError("ProjectileInstance:set", 2, "value", allowed_types[varName],              value) end
