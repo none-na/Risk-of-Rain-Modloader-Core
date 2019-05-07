@@ -67,13 +67,17 @@ do
 	
 	-- Custom set function
 	local _set = lookup.set
-	local setvars = {
+	local allowed_types = {
 		life   = "number",
 		dead   = "number",
 		parent = "number",
 	}
+	local prohibited_types = {
+		death_signal = "string",
+	}
 	function lookup:set(varName, value)
-		if setvars[varName] and type(value) ~= setvars[varName] then typeCheckError("ProjectileInstance:set", 2, "value", setvars[varName], value) end
+		if allowed_types[varName]    and type(value) ~= allowed_types[varName]    then typeCheckError("ProjectileInstance:set", 2, "value", allowed_types[varName],              value) end
+		if prohibited_types[varName] and type(value) == prohibited_types[varName] then typeCheckError("ProjectileInstance:set", 2, "value", "not " .. prohibited_types[varName], value) end
 		return _set(self, varName, value)
 	end
 
