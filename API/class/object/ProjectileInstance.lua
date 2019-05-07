@@ -68,10 +68,6 @@ do
 	-- Custom set function
 	local _set = lookup.set
 	local setvars = {
-		vx     = "number",
-		vy     = "number",
-		ax     = "number",
-		ay     = "number",
 		life   = "number",
 		dead   = "number",
 		parent = "number",
