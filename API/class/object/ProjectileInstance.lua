@@ -20,11 +20,15 @@ do
 		if type(distance)    ~= "number" then typeCheckError("ProjectileInstance:fireBullet", 4, "distance",  "number",  distance) end
 		if type(damage)      ~= "number" then typeCheckError("ProjectileInstance:fireBullet", 5, "damage",    "number",    damage) end
 		if typeOf(hitSprite) ~= "Sprite" and hitSprite  ~= nil then typeCheckError("ProjectileInstance:fireBullet", 6, "hitSprite",  "Sprite or nil",  hitSprite) end
-		if tye(properties)   ~= "number" and properties ~= nil then typeCheckError("ProjectileInstance:fireBullet", 7, "properties", "number or nil", properties) end
+		if type(properties)  ~= "number" and properties ~= nil then typeCheckError("ProjectileInstance:fireBullet", 7, "properties", "number or nil", properties) end
 		verifyInstCall(ids[self])
 		
 		local ths = hitSprite and SpriteUtil.toID(hitSprite) or -1
-		return iwrap(GML.fire_bullet(self:get("parent"), x, y, direction, damage, ths, properties or 0))
+		if isA(Object.findInstance(self:get("parent")), "ActorInstance") then
+			return iwrap(GML.fire_bullet(self:get("parent"), x, y, direction, distance, damage, ths, properties or 0))
+		else
+			return misc.fireBullet(x, y, direction, distance, damage, self:get("team"), ths, properties or 0)
+		end
 	end
 
 	function lookup:fireExplosion(x, y, width, height, damage, explosionSprite, hitSprite, properties)
@@ -40,14 +44,18 @@ do
 		verifyInstCall(ids[self])
 		
 		local tes, ths = (explosionSprite and SpriteUtil.toID(explosionSprite) or -1), (hitSprite and SpriteUtil.toID(hitSprite) or -1)
-		return iwrap(GML.fire_explosion(self:get("parent"), x, y, width, height, damage, tes, ths, properties or 0))
+		if isA(Object.findInstance(self:get("parent")), "ActorInstance") then
+			return iwrap(GML.fire_explosion(self:get("parent"), x, y, width, height, damage, tes, ths, properties or 0))
+		else
+			return misc.fireExplosion(x, y, width, height, damage, self:get("team"), tes, ths, properties or 0)
+		end
 	end
 	
 	-- Kill signalling
 	function lookup:kill(deathSprite, signal)
 		if not childeren[self] then methodCallError("ProjectileInstance:fireExplosion", self) end
 		if typeOf(deathSprite) ~= "Sprite" and deathSprite ~= nil then typeCheckError("ProjectileInstance:kill", 1, "deathSprite", "Sprite or nil", deathSprite) end
-		if type(signal) ~= "number" and signal ~= nil then typeCheckError("ProjectileInstance:kill", 2, "signal", "number or nil", signal) end
+		if type(signal)        ~= "number" and signal      ~= nil then typeCheckError("ProjectileInstance:kill", 2, "signal",       "number or nil",     signal) end
 		--???
 		if signal and (signal <= 0) then error("Non-positive signal for ProjectileInstance:kill") end
 		verifyInstCall(ids[self])
