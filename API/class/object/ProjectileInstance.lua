@@ -89,7 +89,7 @@ do
 			_set(self,"gravity_direction", math.deg(math.atan2(value, self:get("haccel") or 0)))
 		elseif varName == "haccel" then
 			_set(self,"gravity", math.sqrt(value^2 + (self:get("vaccel") or 0)^2))
-			_set(self,"gravity_direction", math.deg(math.atan2(self:get("haccel") or 0, value)))
+			_set(self,"gravity_direction", math.deg(math.atan2(self:get("vaccel") or 0, value)))
 		elseif varName == "gravity" then
 			_set(self,"haccel", value * math.cos(math.rad(self:get("gravity_direction"))))
 			_set(self,"vaccel", value * math.sin(math.rad(self:get("gravity_direction"))))
