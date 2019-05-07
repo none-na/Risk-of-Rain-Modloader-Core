@@ -95,7 +95,7 @@ do
 				if projectileInstance:get("dead") <= 0 then
 					projectileInstance:kill(new.deathSprite)
 				else
-					if _life <= (-(((projectileInstance.sprite or { frames = 1 }).frames) / (projectileInstance.spriteSpeed or 1)) - 1) then
+					if (not projectileInstance:get("death_sprite")) or (_life <= (-(((projectileInstance.sprite or { frames = 1 }).frames) / (projectileInstance.spriteSpeed or 1)) - 1)) then
 						projectileInstance:destroy()
 						return nil
 					end
@@ -277,6 +277,7 @@ do
 		:set("life", -1)
 		
 		projectileInstance.xscale = (direction ~= nil and direction ~= 0) and math.sign(direction) or (parent.xscale ~= 0 and math.sign(parent.xscale) or 1)
+		projectileInstance:set("direction", 90 * (1 - projectileInstance.xscale))
 		
 		projectile_current_collisions[projectileInstance] = {}
 		
