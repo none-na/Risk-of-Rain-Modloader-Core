@@ -77,10 +77,6 @@ do
 		object_to_projectile[newObj] = new
 		object_cache[new] = {}
 		
-		newObj:addCallback("create", function()
-			triggerCallback(new, "init", projectileInstance)
-		end)
-		
 		newObj:addCallback("step", function(projectileInstance)
 			-- Checking if the projectile should be dead
 			local _signal = projectileInstance:get("death_signal")
@@ -181,7 +177,6 @@ end
 do
 	-- Callbacks functions
 	local callbackNames = {
-		["init"] = true,
 		["create"] = true,
 		["death"] = true,
 		["step"] = true,
@@ -252,20 +247,6 @@ do
 				table.insert(object_cache[self], v)
 			end
 		end
-		
-		--[[
-		local group_name = string.lower(group)
-		if group_name ~= "map" then group = ParentObject.find(group) end
-		
-		--???
-		if group == nil then error("Invalid group name for Projectile") end
-		if not groupCallbackNames[callback] then error("Invalid callback name for Projectile") end
-		
-		if projectile_collision_callbacks[self][callback] == nil then projectile_collision_callbacks[self][callback] = {} end
-		if projectile_collision_callbacks[self][callback][group_name] == nil then projectile_collision_callbacks[self][callback][group_name] = {} end
-		table.insert(projectile_collision_callbacks[self][callback][group_name], bind)
-		if group_name ~= "map" then group_cache[self][group_name] = group end
-		--]]
 	end
 	
 	-- Fire
