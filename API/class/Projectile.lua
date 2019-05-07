@@ -92,11 +92,6 @@ do
 				projectileInstance:set("dead", 0)
 				projectileInstance:set("life", -1)
 
-				projectileInstance:set("vx", 0)
-				projectileInstance:set("vy", 0)
-				projectileInstance:set("ax", 0)
-				projectileInstance:set("ay", 0)
-
 				projectile_initialized[projectileInstance] = true
 				
 				triggerCallback(new, "create", projectileInstance)
@@ -136,12 +131,11 @@ do
 			if object_cache[new] then
 				for _,object in ipairs(object_cache[new]) do
 					if not projectile_current_collisions[projectileInstance][object] then projectile_current_collisions[projectileInstance][object] = {} end
-					for _,instance in ipairs(object:findAllRectangle(projectileInstance.x, projectileInstance.y, projectileInstance.x + projectileInstance:get("vx"), projectileInstance.y + projectileInstance:get("vy"))) do
-						local _vx, _vy = projectileInstance:get("vx", "vy")
-						local _hcollision = projectileInstance:collidesWith(instance, projectileInstance.x + _vx, projectileInstance.y)
-						local _vcollision = projectileInstance:collidesWith(instance, projectileInstance.x, projectileInstance.y + _vy)
-						local _xdirection = _hcollision and math.sign(_vx) or 0
-						local _ydirection = _vcollision and math.sign(_vy) or 0
+					for _,instance in ipairs(object:findAll()) do
+						local _hcollision = projectileInstance:collidesMap(projectileInstance.x, projectileInstance:get("yprevious"))
+						local _vcollision = projectileInstance:collidesMap(projectileInstance:get("xprevious"), projectileInstance.y)
+						local _xdirection = _hcollision and math.sign(projectileInstance.x - projectileInstance:get("xprevious")) or 0
+						local _ydirection = _vcollision and math.sign(projectileInstance.y - projectileInstance:get("yprevious")) or 0
 						if (_hcollision or _vcollision) then
 							if not projectile_current_collisions[projectileInstance][object][instance] then
 								triggerCollisionCallback(new, "entry", object, projectileInstance, instance, _xdirection, _ydirection)
@@ -156,11 +150,10 @@ do
 				end
 			end
 			
-			local _vx, _vy = projectileInstance:get("vx", "vy")
-			local _hcollision = projectileInstance:collidesMap(projectileInstance.x + _vx, projectileInstance.y)
-			local _vcollision = projectileInstance:collidesMap(projectileInstance.x, projectileInstance.y + _vy)
-			local _xdirection = _hcollision and math.sign(_vx) or 0
-			local _ydirection = _vcollision and math.sign(_vy) or 0
+			local _hcollision = projectileInstance:collidesMap(projectileInstance.x, projectileInstance:get("yprevious"))
+			local _vcollision = projectileInstance:collidesMap(projectileInstance:get("xprevious"), projectileInstance.y)
+			local _xdirection = _hcollision and math.sign(projectileInstance.x - projectileInstance:get("xprevious")) or 0
+			local _ydirection = _vcollision and math.sign(projectileInstance.y - projectileInstance:get("yprevious")) or 0
 			if (_hcollision or _vcollision) then
 				if not projectile_current_collisions[projectileInstance]["map"] then
 					triggerCollisionCallback(new, "entry", "map", projectileInstance, _xdirection, _ydirection)
@@ -171,13 +164,6 @@ do
 				triggerCollisionCallback(new, "exit", "map", projectileInstance, _xdirection, _ydirection)
 				projectile_current_collisions[projectileInstance]["map"] = nil
 			end
-			
-			-- Movement
-			local _vx, _vy = projectileInstance:get("vx", "vy")
-			projectileInstance.x = projectileInstance.x + _vx
-			projectileInstance.y = projectileInstance.y + _vy
-			projectileInstance:set("vx", _vx + projectileInstance:get("ax"))
-			projectileInstance:set("vy", _vy + projectileInstance:get("ay"))
 		end)
 		
 		newObj:addCallback("destroy", function(projectileInstance)
