@@ -32,10 +32,12 @@ mods.modenv.Projectile = Projectile
 do
 	-- Triggers normal callbacks if they exist
 	local function triggerCallback(self, callback, ...)
-		if projectile_callbacks[self][callback] then
-			for k,v in ipairs(projectile_callbacks[self][callback]) do
-				v(...)
-			end
+		local callbacks = projectile_callbacks[self]
+		if not callbacks then return nil end
+		callbacks = callbacks[callback]
+		if not callbacks then return nil end
+		for k,v in ipairs(callbacks) do
+			v(...)
 		end
 	end
 	
@@ -114,20 +116,16 @@ do
 				for _,object in ipairs(object_cache[new]) do
 					if not projectile_current_collisions[projectileInstance][object] then projectile_current_collisions[projectileInstance][object] = {} end
 					for _,instance in ipairs(object:findAll()) do
-						local _hcollision = projectileInstance:collidesMap(projectileInstance.x, projectileInstance:get("yprevious"))
-						local _vcollision = projectileInstance:collidesMap(projectileInstance:get("xprevious"), projectileInstance.y)
-						local _xdirection = _hcollision and math.sign(projectileInstance.x - projectileInstance:get("xprevious")) or 0
-						local _ydirection = _vcollision and math.sign(projectileInstance.y - projectileInstance:get("yprevious")) or 0
-						if (_hcollision or _vcollision) then
+						if projectileInstance:collidesWith(instance, projectileInstance.x, projectileInstance.y) then
 							if not projectile_current_collisions[projectileInstance][object][instance] then
-								triggerCollisionCallback(new, "entry", object, projectileInstance, instance, _xdirection, _ydirection)
+								triggerCollisionCallback(new, "entry", object, projectileInstance, instance)
 								if projectileInstance:get("death_signal") then return nil end
 								projectile_current_collisions[projectileInstance][object][instance] = true
 							end
 							triggerCollisionCallback(new, "collide", object, projectileInstance)
 							if projectileInstance:get("death_signal") then return nil end
 						elseif projectile_current_collisions[projectileInstance][object][instance] then
-							triggerCollisionCallback(new, "exit", object, projectileInstance, instance, _xdirection, _ydirection)
+							triggerCollisionCallback(new, "exit", object, projectileInstance, instance)
 							if projectileInstance:get("death_signal") then return nil end
 							projectile_current_collisions[projectileInstance][object][instance] = nil
 						end
@@ -135,20 +133,16 @@ do
 				end
 			end
 			
-			local _hcollision = projectileInstance:collidesMap(projectileInstance.x, projectileInstance:get("yprevious"))
-			local _vcollision = projectileInstance:collidesMap(projectileInstance:get("xprevious"), projectileInstance.y)
-			local _xdirection = _hcollision and math.sign(projectileInstance.x - projectileInstance:get("xprevious")) or 0
-			local _ydirection = _vcollision and math.sign(projectileInstance.y - projectileInstance:get("yprevious")) or 0
-			if (_hcollision or _vcollision) then
+			if projectileInstance:collidesMap(projectileInstance.x, projectileInstance.y) then
 				if not projectile_current_collisions[projectileInstance]["map"] then
-					triggerCollisionCallback(new, "entry", "map", projectileInstance, _xdirection, _ydirection)
+					triggerCollisionCallback(new, "entry", "map", projectileInstance)
 					if projectileInstance:get("death_signal") then return nil end
 					projectile_current_collisions[projectileInstance]["map"] = true
 				end
 				triggerCollisionCallback(new, "collide", "map", projectileInstance)
 				if projectileInstance:get("death_signal") then return nil end
 			elseif projectile_current_collisions[projectileInstance]["map"] then
-				triggerCollisionCallback(new, "exit", "map", projectileInstance, _xdirection, _ydirection)
+				triggerCollisionCallback(new, "exit", "map", projectileInstance)
 				if projectileInstance:get("death_signal") then return nil end
 				projectile_current_collisions[projectileInstance]["map"] = nil
 			end
@@ -183,9 +177,7 @@ do
 		return object_to_projectile[instance:getObject()]
 	end
 	setmetatable(Projectile, { __call = function(t, name) return Projectile.new(name) end } )
-end
-
-do
+	
 	-- Callbacks functions
 	local callbackNames = {
 		["create"]  = true,
@@ -210,8 +202,8 @@ do
 		return parent and parent or Object.find(name)
 	end
 	local groupCallbackNames = {
-		["entry"] = true,   -- projectileInstance [otherInstance] xdirection ydirection
-		["exit"] = true,    -- projectileInstance [otherInstance] xdirection ydirection
+		["entry"] = true,   -- projectileInstance [otherInstance]
+		["exit"] = true,    -- projectileInstance [otherInstance]
 		["collide"] = true, -- projectileInstance [otherInstance]
 	}
 	function lookup:addCollisionCallback(callback, objects, bind)
@@ -281,7 +273,7 @@ do
 		
 		projectile_current_collisions[projectileInstance] = {}
 		
-		triggerCallback(new, "create", projectileInstance)
+		triggerCallback(self, "create", projectileInstance)
 		return projectileInstance
 	end
 	
