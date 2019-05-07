@@ -24,7 +24,6 @@ local projectile_callbacks           = {}
 local projectile_collision_callbacks = {}
 local object_cache                   = {}
 local projectile_current_collisions  = {}
-local projectile_initialized         = {}
 
 -- Environment
 Projectile = {}
@@ -83,20 +82,6 @@ do
 		end)
 		
 		newObj:addCallback("step", function(projectileInstance)
-		
-			-- Initialization and create
-			-- The reason is that the "create" callback is fired before the "fire" method can finish
-			if not projectile_initialized[projectileInstance] then
-				projectile_current_collisions[projectileInstance] = {}
-
-				projectileInstance:set("dead", 0)
-				projectileInstance:set("life", -1)
-
-				projectile_initialized[projectileInstance] = true
-				
-				triggerCallback(new, "create", projectileInstance)
-			end
-			
 			-- Checking if the projectile should be dead
 			local _signal = projectileInstance:get("death_signal")
 			if _signal and (projectileInstance:get("dead") <= 0) then
@@ -169,7 +154,6 @@ do
 		newObj:addCallback("destroy", function(projectileInstance)
 			-- Clean-up
 			projectile_current_collisions[projectileInstance] = nil
-			projectile_initialized[projectileInstance] = nil
 			triggerCallback(new, "destroy", projectileInstance)
 		end)
 		
@@ -293,9 +277,17 @@ do
 		if type(direction) ~= "number" and direction ~= nil then typeCheckError("Projectile:fire", 4, "direction", "number or nil", direction) end
 		
 		local projectileInstance = iwrap(GML.instance_create(x,y, GMObject.toID(projectile_object[self])))
-		projectileInstance:set("parent", parent.id):set("team", parent:get("team"))
+		
+		:set("parent", parent.id)
+		:set("team", parent:get("team"))
+		:set("dead", 0)
+		:set("life", -1)
+		
 		projectileInstance.xscale = (direction ~= nil and direction ~= 0) and math.sign(direction) or (parent.xscale ~= 0 and math.sign(parent.xscale) or 1)
 		
+		projectile_current_collisions[projectileInstance] = {}
+		
+		triggerCallback(new, "create", projectileInstance)
 		return projectileInstance
 	end
 	
