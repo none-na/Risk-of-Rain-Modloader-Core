@@ -85,10 +85,10 @@ do
 		if allowed_types[varName]    and type(value) ~= allowed_types[varName]    then typeCheckError("ProjectileInstance:set", 2, "value", allowed_types[varName],              value) end
 		if prohibited_types[varName] and type(value) == prohibited_types[varName] then typeCheckError("ProjectileInstance:set", 2, "value", "not " .. prohibited_types[varName], value) end
 		if varName == "vaccel" then
-			self:set("gravity", math.sqrt(value^2 + self:get("haccel")^2))
+			self:set("gravity", math.sqrt(value^2 + (self:get("haccel") or 0)^2))
 			self:set("gravity_direction", math.deg(math.atan2(value, self:get("haccel"))))
 		elseif varName == "haccel" then
-			self:set("gravity", math.sqrt(value^2 + self:get("vaccel")^2))
+			self:set("gravity", math.sqrt(value^2 + (self:get("vaccel") or 0)^2))
 			self:set("gravity_direction", math.deg(math.atan2(self:get("haccel"), value)))
 		elseif varName == "gravity" then
 			self:set("haccel", value * math.cos(math.rad(self:get("gravity_direction"))))
