@@ -86,6 +86,8 @@ do
 				projectileInstance.subimage = 1
 				projectileInstance:set("life", 0)
 				projectileInstance:set("dead", _signal)
+				projectileInstance:set("speed", 0)
+				projectileInstance:set("gravity", 0)
 				projectileInstance:set("death_signal", nil)
 				triggerCallback(new, "death", projectileInstance)
 			end
@@ -268,6 +270,8 @@ do
 		:set("parent", parent.id)
 		:set("team", parent:get("team"))
 		:set("dead", 0)
+		:set("vaccel", 0)
+		:set("haccel", 0)
 		
 		projectileInstance.xscale = (direction ~= nil and direction ~= 0) and math.sign(direction) or (parent.xscale ~= 0 and math.sign(parent.xscale) or 1)
 		projectileInstance:set("direction", 90 * (1 - projectileInstance.xscale))
@@ -290,7 +294,7 @@ do
 	end
 	
 	function lookup:getObject()
-		if not children[self] then methodCallError("Projectile:getObject", self) end
+		if not childeren[self] then methodCallError("Projectile:getObject", self) end
 		return projectile_object[self]
 	end
 	
