@@ -107,6 +107,7 @@ do
 			
 			-- step callback
 			triggerCallback(new, "step", projectileInstance)
+			if projectileInstance:get("death_signal") then return nil end
 			
 			-- Collisions and callbacks
 			if object_cache[new] then
@@ -120,11 +121,14 @@ do
 						if (_hcollision or _vcollision) then
 							if not projectile_current_collisions[projectileInstance][object][instance] then
 								triggerCollisionCallback(new, "entry", object, projectileInstance, instance, _xdirection, _ydirection)
+								if projectileInstance:get("death_signal") then return nil end
 								projectile_current_collisions[projectileInstance][object][instance] = true
 							end
 							triggerCollisionCallback(new, "collide", object, projectileInstance)
+							if projectileInstance:get("death_signal") then return nil end
 						elseif projectile_current_collisions[projectileInstance][object][instance] then
 							triggerCollisionCallback(new, "exit", object, projectileInstance, instance, _xdirection, _ydirection)
+							if projectileInstance:get("death_signal") then return nil end
 							projectile_current_collisions[projectileInstance][object][instance] = nil
 						end
 					end
@@ -138,11 +142,14 @@ do
 			if (_hcollision or _vcollision) then
 				if not projectile_current_collisions[projectileInstance]["map"] then
 					triggerCollisionCallback(new, "entry", "map", projectileInstance, _xdirection, _ydirection)
+					if projectileInstance:get("death_signal") then return nil end
 					projectile_current_collisions[projectileInstance]["map"] = true
 				end
 				triggerCollisionCallback(new, "collide", "map", projectileInstance)
+				if projectileInstance:get("death_signal") then return nil end
 			elseif projectile_current_collisions[projectileInstance]["map"] then
 				triggerCollisionCallback(new, "exit", "map", projectileInstance, _xdirection, _ydirection)
+				if projectileInstance:get("death_signal") then return nil end
 				projectile_current_collisions[projectileInstance]["map"] = nil
 			end
 		end)
