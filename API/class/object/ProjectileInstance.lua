@@ -23,11 +23,11 @@ do
 		if type(properties)  ~= "number" and properties ~= nil then typeCheckError("ProjectileInstance:fireBullet", 7, "properties", "number or nil", properties) end
 		verifyInstCall(ids[self])
 		
-		local ths = hitSprite and SpriteUtil.toID(hitSprite) or -1
 		if isA(Object.findInstance(self:get("parent")), "ActorInstance") then
+			local ths = hitSprite and SpriteUtil.toID(hitSprite) or -1
 			return iwrap(GML.fire_bullet(self:get("parent"), x, y, direction, distance, damage, ths, properties or 0))
 		else
-			return misc.fireBullet(x, y, direction, distance, damage * self:get("damage"), self:get("team"), ths, properties or 0)
+			return misc.fireBullet(x, y, direction, distance, damage * self:get("damage"), self:get("team"), hitSprite, properties or 0)
 		end
 	end
 
@@ -43,11 +43,11 @@ do
 		if type(properties)        ~= "number" and properties      ~= nil then typeCheckError("ProjectileInstance:fireExplosion", 8, "properties",      "number or nil",      properties) end
 		verifyInstCall(ids[self])
 		
-		local tes, ths = (explosionSprite and SpriteUtil.toID(explosionSprite) or -1), (hitSprite and SpriteUtil.toID(hitSprite) or -1)
 		if isA(Object.findInstance(self:get("parent")), "ActorInstance") then
+			local tes, ths = (explosionSprite and SpriteUtil.toID(explosionSprite) or -1), (hitSprite and SpriteUtil.toID(hitSprite) or -1)
 			return iwrap(GML.fire_explosion(self:get("parent"), x, y, width, height, damage, tes, ths, properties or 0))
 		else
-			return misc.fireExplosion(x, y, width, height, damage * self:get("damage"), self:get("team"), tes, ths, properties or 0)
+			return misc.fireExplosion(x, y, width, height, damage * self:get("damage"), self:get("team"), explosionSprite, hitSprite, properties or 0)
 		end
 	end
 	
