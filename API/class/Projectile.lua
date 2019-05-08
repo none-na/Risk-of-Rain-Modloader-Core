@@ -150,9 +150,6 @@ do
 				if projectileInstance:get("death_signal") then return nil end
 				projectile_current_collisions[projectileInstance]["map"] = nil
 			end
-			
-			projectileInstance:set("hspeed", projectileInstance:get("hspeed") + projectileInstance:get("haccel"))
-			projectileInstance:set("vspeed", projectileInstance:get("vspeed") + projectileInstance:get("vaccel"))
 		end)
 		
 		newObj:addCallback("draw", function(projectileInstance)
