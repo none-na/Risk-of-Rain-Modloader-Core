@@ -258,22 +258,23 @@ do
 	end
 	
 	-- Fire
-	function lookup:fire(parent, x, y, direction)
+	function lookup:fire(x, y, parent, direction)
 		if not childeren[self] then methodCallError("Projectile:fire", self) end
-		if not isA(parent, "ActorInstance") then typeCheckError("Projectile:fire", 1, "parent", "ActorInstance", parent) end
-		if type(x)         ~= "number" then typeCheckError("Projectile:fire", 2, "x", "number", x) end
-		if type(y)         ~= "number" then typeCheckError("Projectile:fire", 3, "y", "number", y) end
+		if type(x)         ~= "number" then typeCheckError("Projectile:fire", 1, "x", "number", x) end
+		if type(y)         ~= "number" then typeCheckError("Projectile:fire", 2, "y", "number", y) end
+		if not isA(parent, "ActorInstance") and parent ~= nil then typeCheckError("Projectile:fire", 3, "parent", "ActorInstance", parent) end
 		if type(direction) ~= "number" and direction ~= nil then typeCheckError("Projectile:fire", 4, "direction", "number or nil", direction) end
-		
+	
 		local projectileInstance = iwrap(GML.instance_create(x,y, GMObject.toID(projectile_object[self])))
 		
-		:set("parent", parent.id)
-		:set("team", parent:get("team"))
+		:set("parent", parent and parent.id or -1)
+		:set("team", parent and parent:get("team") or "neutral")
+		:set("damage", parent and parent:get("damage") or 0)
 		:set("dead", 0)
 		:set("vaccel", 0)
 		:set("haccel", 0)
 		
-		projectileInstance.xscale = (direction ~= nil and direction ~= 0) and math.sign(direction) or (parent.xscale ~= 0 and math.sign(parent.xscale) or 1)
+		projectileInstance.xscale = (direction ~= nil and direction ~= 0) and math.sign(direction) or ((parent and parent.xscale ~= 0) and math.sign(parent.xscale) or 1)
 		projectileInstance:set("direction", 90 * (1 - projectileInstance.xscale))
 		
 		projectile_current_collisions[projectileInstance] = {}
