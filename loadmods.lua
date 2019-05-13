@@ -48,6 +48,7 @@ mods.loadWithDependencies = function(data)
 end
 
 function CallbackHandlers.loadAllMods(args)
+	local noOnlineList = {}
 	mods.initFunctionQueue = {}
 	for i = 1, #args do
 		repeat
@@ -76,6 +77,10 @@ function CallbackHandlers.loadAllMods(args)
 			metadata.dependencyList = {}
 			metadata.rawversion = metadata.version
 			metadata.version = semver(metadata.version)
+			if metadata.mpcompat ~= true then
+				table.insert(noOnlineList, metadata.name)
+				metadata.mpcompat = false
+			end
 			if metadata.dependencies then
 				for k, v in ipairs(metadata.dependencies) do
 					v.version = semver(v.version)
@@ -89,6 +94,16 @@ function CallbackHandlers.loadAllMods(args)
 			moddata[string.lower(metadata.internalname)] = metadata
 			moddatalist[#moddatalist + 1] = metadata
 		until true
+	end
+
+	if #noOnlineList ~= 0 then
+		GML.variable_global_set("online_mp_enabled", AnyTypeArg(0))
+		GML.variable_global_set("online_incompatibility_count", AnyTypeArg(#noOnlineList))
+		local incompatStr = "There are " .. tostring(#noOnlineList) .. " multiplayer-incompatible mods enabled:"
+		for _, incompat in ipairs(noOnlineList) do
+			incompatStr = incompatStr .. "\n" .. incompat
+		end
+		GML.variable_global_set("online_incompatibility_string", AnyTypeArg(incompatStr))
 	end
 
 	for _, mod in ipairs(moddatalist) do
