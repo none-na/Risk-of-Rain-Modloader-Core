@@ -50,6 +50,7 @@ local signature_to_mod = {}
 
 local playerLists = {}
 local miscTables = {}
+local netTables = {}
 
 do
 	local function formatErrorLine(v)
@@ -362,6 +363,7 @@ local function loadFromFile(s, dat, nocopy)
 	end
 	newenv._G = newenv
 	table.insert(miscTables, newenv.misc)
+	table.insert(netTables, newenv.net)
 	table.insert(playerLists, newenv.misc.players)
 	
 	dat.env = newenv
@@ -461,5 +463,6 @@ public.modenv = modenv
 public.aliases = aliases
 public.mods = mods
 public.modlist = modlist
+public.netAPIList = netTables
 
 return public

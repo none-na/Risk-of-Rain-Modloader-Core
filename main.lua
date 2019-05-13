@@ -96,6 +96,8 @@ require "api/class/ParticleType"
 
 require "api/module/input"
 
+require "api/module/net"
+
 require "api/class/Item"
 
 require "api/class/Artifact"
@@ -121,10 +123,12 @@ local function initializeRun()
 	ResetGraphics()
 	mods.clearPlayerList()
 	mods.updateDirectorInstance()
+	RefreshNetAPI(mods.netAPIList)
 end
 
 local function updatePlayerList()
 	mods.updatePlayerList()
+	RefreshNetAPILate(mods.netAPIList)
 end
 
 function CallbackHandlers.initializeRun()
