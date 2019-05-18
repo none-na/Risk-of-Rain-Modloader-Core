@@ -93,16 +93,13 @@ function CallbackHandlers.HandleUserPacket(args)
 	local modname = ffi.string(GML.readstring())
 	local packetname = ffi.string(GML.readstring())
 	local hargs = {sender}
-	local argpos = 2
 	-- ADD CODE TO CHECK FOR END OF PACKET
 	local count = GML.readint()
 	for i = 1, count do
 		local t = typeIDs[GML.readbyte()]
-		hargs[argpos] = decoders[typeIDs[t]]()
-		argpos = argpos + 1
+		hargs[i] = decoders[t]()
 	end
-
-	CallModdedFunction(packet_handler[all_packets[modname][packetname]], hargs)
+	CallModdedFunction(packet_handler[all_packets[modname][packetname:lower()]], hargs)
 end
 
 function lookup:sendAsClient(...)
