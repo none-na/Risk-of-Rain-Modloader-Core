@@ -8,12 +8,14 @@ net.ALL = 1
 net.EXCLUDE = 2
 net.DIRECT = 3
 
-local online = false
+net_online = false
+net_host = false
 function RefreshNetAPI(tables)
 	local coop = AnyTypeRet(GML.variable_instance_get(GML_init_instance_id, "coop")) == 2
-	online = coop
+	net_online = coop
 
 	local host = true
+	net_host = host
 	if coop then
 		host = AnyTypeRet(GML.variable_global_get("host")) > 0
 	end
@@ -26,7 +28,7 @@ function RefreshNetAPI(tables)
 end
 function RefreshNetAPILate(tables)
 	local player = nil
-	if online then
+	if net_online then
 		player = GMInstance.iwrap(AnyTypeRet(GML.variable_global_get("my_player")))
 	end
 	for _, v in ipairs(tables) do

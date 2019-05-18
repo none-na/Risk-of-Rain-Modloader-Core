@@ -107,9 +107,11 @@ end
 
 function lookup:sendAsClient(...)
 	if not children[self] then methodCallError("Packet:sendAsClient", self) end
-	local old_buff = GML.net_packet_begin()
-	encodePacketData(self, {...})
-	GML.net_packet_end(old_buff, 0, -4)
+	if net_online and not net_host then
+		local old_buff = GML.net_packet_begin()
+		encodePacketData(self, {...})
+		GML.net_packet_end(old_buff, 0, -4)
+	end
 end
 
 net.ALL = "all"
@@ -127,15 +129,16 @@ function lookup:sendAsHost(target, player, ...)
 	if type(target) ~= "string" then typeCheckError("Packet:sendAsHost", 1, "target", "string", target, 1) end
 	if target ~= "all" and typeOf(player) ~= "PlayerInstance" then typeCheckError("Packet:sendAsHost", 1, "player", "PlayerInstance", player, 1) end
 	if sendTypes[target] == nil then error("unknown target '" .. target .. "'", 2) end
-	local old_buff = GML.net_packet_begin()
-	encodePacketData(self, {...})
-	if target == "all" then
-		player = -4
-	else
-		player = GMInstance.IDs[player]
+	if net_online and net_host then
+		local old_buff = GML.net_packet_begin()
+		encodePacketData(self, {...})
+		if target == "all" then
+			player = -4
+		else
+			player = GMInstance.IDs[player]
+		end
+		GML.net_packet_end(old_buff, sendTypes[target], player)
 	end
-	
-	GML.net_packet_end(old_buff, sendTypes[target], player)
 end
 
 net.Packet = setmetatable({new = function(name, handler)
