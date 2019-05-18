@@ -35,7 +35,7 @@ function RefreshNetAPILate(tables)
 end
 
 
-require("api/class/Packet")
+require("api/class/net/Packet")
 
 -- Add to mod environment
 mods.modenv.net = net
