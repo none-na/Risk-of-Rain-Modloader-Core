@@ -9,8 +9,8 @@ end
 
 local iwrap = GMInstance.iwrap
 
-local identity_mid = {}
-local identity_obj = {}
+local identity_mid = setmetatable({}, {__mode = "k"})
+local identity_obj = setmetatable({}, {__mode = "k"})
 
 lookup.object = { get = function(self)
 	return identity_obj[self]
