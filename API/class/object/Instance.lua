@@ -298,6 +298,20 @@ lookup.id = {
 }
 lookup.ID = lookup.id
 
+-- Networking
+require "api/class/net/NetInstance"
+local getNetIdentity = GMInstance.getNetIdentity
+function lookup:getNetIdentity()
+	if not children[self] then methodCallError("Instance:getNetIdentity", self) end
+	local mid = fastGet(ids[self], "m_id")
+	if type(mid) ~= "number" then
+		error("this instance does not have a valid network identity", 2)
+	else
+		return getNetIdentity(mid, self:getObject())
+	end
+end
+
+-- Dump variables
 do
 	-- Hidden when advanced is false
 	local blockedNames = {
