@@ -38,6 +38,7 @@ local encoders = {
 	Sprite = function(val) GML.writesprite(SpriteUtil.toID(val)) end,
 	Sound = function(val) GML.writesound(SoundUtil.ids[val]) end,
 	Item = function(val) GML.writeobject(RoRItem.toObjID(val)) end,
+	NetInstance = function(val) GML.writeobject(GMObject.ids[val.object]) GML.writedouble(val.id) end,
 }
 
 local writeRaw = {
@@ -52,6 +53,11 @@ local decoders = {
 	Sprite = function() return SpriteUtil.fromID(GML.readsprite()) end,
 	Sound = function() return SoundUtil.ids_map[GML.readsound()] end,
 	Item = function() return RoRItem.fromObjID(GML.readobject()) end,
+	NetInstance = function() 
+		local obj = GMObject.ids_map[GML.readobject()]
+		local id = GML.readdouble()
+		return GMInstance.getNetIdentity(id, obj)
+	end,
 	["true"] = function() return true end,
 	["false"] = function() return false end,
 	["nil"] = function() return nil end,
