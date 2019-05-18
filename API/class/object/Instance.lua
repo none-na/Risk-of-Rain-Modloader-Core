@@ -424,6 +424,57 @@ do
 	end
 end
 
+----------
+-- Data --
+----------
+
+local instData = {} -- Table of instance id -> table
+local instDataKeys = {} -- Array of the keys
+local remove = table.remove
+function GMInstance.collectGarbage()
+	-- Loops over all keys and removes the table if the instance is gone
+	local i = 1
+	while i <= #instDataKeys do
+		if GML.instance_exists(instDataKeys[i]) == 0 then
+			instData[instDataKeys[i]] = nil
+			remove(instDataKeys, i)
+		else
+			i = i + 1
+		end
+	end
+end
+local function getDataInternal(instance, mod)
+	local id = ids[instance]
+	mod = string.lower(mod)
+	-- Make sure the base table exists
+	local topData = instData[id]
+	if topData == nil then
+		topData = {}
+		instData[id] = topData
+		table.insert(instDataKeys, id)
+	end
+	-- Make sure the mod table exists
+	local modData = topData[mod]
+	if modData == nil then
+		modData = {}
+		topData[mod] = modData
+	end
+	-- Finally, return the table
+	return modData
+end
+
+-- Get data from current mod
+function lookup:getData()
+	if not children[self] then methodCallError("Instance:getData", self) end
+	return getDataInternal(self, GetModContext())
+end
+
+-- Get data from another mod
+function lookup:getModData(mod)
+	if not children[self] then methodCallError("Instance:getModData", self) end
+	if type(mod) ~= "string" then typeCheckError("Instance:getModData", 1, "mod", "string", mod) end
+	return getDataInternal(self, mod)
+end
 
 -- Load other instance classes
 require "api/class/object/InstanceAccessor"
