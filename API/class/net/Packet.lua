@@ -26,7 +26,7 @@ local function newPacket(fname, name, handler)
 	return new
 end
 
-local typeIDs = {"number", "string", "GMObject", "Sprite", "Sound", "Item", "true", "false", "nil"}
+local typeIDs = {"number", "string", "GMObject", "Sprite", "Sound", "Item", "NetInstance", "true", "false", "nil"}
 for k, v in ipairs(typeIDs) do
 	typeIDs[v] = k
 end
@@ -38,6 +38,11 @@ local encoders = {
 	Sprite = function(val) GML.writesprite(SpriteUtil.toID(val)) end,
 	Sound = function(val) GML.writesound(SoundUtil.ids[val]) end,
 	Item = function(val) GML.writeobject(RoRItem.toObjID(val)) end,
+}
+
+local writeRaw = {
+	["boolean"] = true,
+	["nil"] = true
 }
 
 local decoders = {
@@ -59,7 +64,7 @@ local function encodePacketData(packet, args)
 	GML.writeint(#args)
 	for _, v in ipairs(args) do
 		local t = typeOf(v)
-		if encoders[t] == nil then
+		if encoders[t] == nil and not writeRaw[t] then
 			error("unsupported value type " .. t, 3)
 		else
 			-- Special cases for single byte values
@@ -87,7 +92,7 @@ function CallbackHandlers.HandleUserPacket(args)
 	local count = GML.readint()
 	for i = 1, count do
 		local t = typeIDs[GML.readbyte()]
-		hargs[argpos] = decoders[t]()
+		hargs[argpos] = decoders[typeIDs[t]]()
 		argpos = argpos + 1
 	end
 
