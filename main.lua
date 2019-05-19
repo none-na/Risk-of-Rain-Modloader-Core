@@ -127,18 +127,19 @@ local function initializeRun()
 end
 
 local function updatePlayerList()
+	mods.clearPlayerList()
 	mods.updatePlayerList()
 	RefreshNetAPILate(mods.netAPIList)
 end
 
 function CallbackHandlers.initializeRun()
 	local success, err = pcall(initializeRun)
-	if err then log(err) end
+	if err then log("initializeRun:", err) end
 end
 
 function CallbackHandlers.updatePlayerList()
 	local success, err = pcall(updatePlayerList)
-	if err then log(err) end
+	if err then log("updatePlayerList:", err) end
 end
 
 function CallbackHandlers.encodeModSave() end

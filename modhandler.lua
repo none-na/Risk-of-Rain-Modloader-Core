@@ -428,7 +428,7 @@ do
 	function public.clearPlayerList()
 		for _, v in ipairs(playerLists) do
 			for k, _ in ipairs(v) do
-				rawset(v, k, nil)
+				v[k] = nil
 			end
 		end
 	end
@@ -438,7 +438,16 @@ do
 		if playerObj == nil then
 			playerObj = Object.find("p", "vanilla")
 		end
-		local players = playerObj:findAll()
+		local playersFalse = playerObj:findAll()
+		local players = {}
+		local count = 0
+		for _, v in ipairs(playersFalse) do
+			if v:isValid() then
+				count = count + 1
+				players[count] = v
+			end
+		end
+
 		for _, v in ipairs(playerLists) do
 			for k, p in ipairs(players) do
 				rawset(v, k, p)
