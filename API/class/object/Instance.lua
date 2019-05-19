@@ -6,7 +6,11 @@ local gmobj = GMObject
 local static, lookup, meta, ids, special, children = NewClass("Instance", true, nil)
 
 __tostring_default_instance = function(obj)
-	return "<instance " .. obj:getObject():getName() .. " " .. tostring(obj.id) .. ">"
+	if obj:isValid() then
+		return "<" .. typeOf(obj) .. " " .. obj:getObject():getName() .. " " .. tostring(obj.id) .. ">"
+	else
+		return "<" .. typeOf(obj) .. " (destroyed)>"
+	end
 end
 meta.__tostring = __tostring_default_instance
 
