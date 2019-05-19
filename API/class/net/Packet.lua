@@ -31,14 +31,15 @@ for k, v in ipairs(typeIDs) do
 	typeIDs[v] = k
 end
 
+-- 3 is buffer_u16
 local encoders = {
 	number = function(val) GML.writedouble(val) end,
 	string = function(val) GML.writestring(val) end,
-	GMObject = function(val) GML.writeobject(GMObject.ids[val]) end,
-	Sprite = function(val) GML.writesprite(SpriteUtil.toID(val)) end,
-	Sound = function(val) GML.writesound(SoundUtil.ids[val]) end,
-	Item = function(val) GML.writeobject(RoRItem.toObjID(val)) end,
-	NetInstance = function(val) GML.writeobject(GMObject.ids[val.object]) GML.writedouble(val.id) end,
+	GMObject = function(val) GML.writeobject(3, GMObject.ids[val]) end,
+	Sprite = function(val) GML.writesprite(3, SpriteUtil.toID(val)) end,
+	Sound = function(val) GML.writesound(3, SoundUtil.ids[val]) end,
+	Item = function(val) GML.writeobject(3, RoRItem.toObjID(val)) end,
+	NetInstance = function(val) GML.writeobject(3, GMObject.ids[val.object]) GML.writedouble(val.id) end,
 }
 
 local writeRaw = {
@@ -49,12 +50,12 @@ local writeRaw = {
 local decoders = {
 	number = function() return GML.readdouble() end,
 	string = function() return ffi.string(GML.readstring()) end,
-	GMObject = function() return GMObject.ids_map[GML.readobject()] end,
-	Sprite = function() return SpriteUtil.fromID(GML.readsprite()) end,
-	Sound = function() return SoundUtil.ids_map[GML.readsound()] end,
-	Item = function() return RoRItem.fromObjID(GML.readobject()) end,
+	GMObject = function() return GMObject.ids_map[GML.readobject(3)] end,
+	Sprite = function() return SpriteUtil.fromID(GML.readsprite(3)) end,
+	Sound = function() return SoundUtil.ids_map[GML.readsound(3)] end,
+	Item = function() return RoRItem.fromObjID(GML.readobject(3)) end,
 	NetInstance = function() 
-		local obj = GMObject.ids_map[GML.readobject()]
+		local obj = GMObject.ids_map[GML.readobject(3)]
 		local id = GML.readdouble()
 		return GMInstance.getNetIdentity(id, obj)
 	end,
