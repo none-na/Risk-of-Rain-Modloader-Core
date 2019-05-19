@@ -22,7 +22,7 @@ end}
 
 function lookup:resolve()
 	if not children[self] then methodCallError("NetInstance:resolve", self) end
-	local id = GML.net_find_object(identity_obj[self], identity_mid[self])
+	local id = GML.net_find_object(GMObject.ids[identity_obj[self]], identity_mid[self])
 	if id > 0 then
 		return iwrap(id)
 	else
