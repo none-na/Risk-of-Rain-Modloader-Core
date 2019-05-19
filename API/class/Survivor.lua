@@ -190,7 +190,7 @@ lookup.titleSprite = {
 
 lookup.idleSprite = {
 	set = function(t, v)
-		if typeOf(v) ~= "Sprite" then fieldTypeError("Survivor.titleSprite", "Sprite", v) end
+		if typeOf(v) ~= "Sprite" then fieldTypeError("Survivor.idleSprite", "Sprite", v) end
 		GML.array_global_write_2("class_info", AnyTypeArg(SpriteUtil.toID(v)), ids[t], 19)
 	end,
 	get = function(t)

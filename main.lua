@@ -96,6 +96,8 @@ require "api/class/ParticleType"
 
 require "api/module/input"
 
+require "api/module/net"
+
 require "api/class/Item"
 
 require "api/class/Artifact"
@@ -121,20 +123,23 @@ local function initializeRun()
 	ResetGraphics()
 	mods.clearPlayerList()
 	mods.updateDirectorInstance()
+	RefreshNetAPI(mods.netAPIList)
 end
 
 local function updatePlayerList()
+	mods.clearPlayerList()
 	mods.updatePlayerList()
+	RefreshNetAPILate(mods.netAPIList)
 end
 
 function CallbackHandlers.initializeRun()
 	local success, err = pcall(initializeRun)
-	if err then log(err) end
+	if err then log("initializeRun:", err) end
 end
 
 function CallbackHandlers.updatePlayerList()
 	local success, err = pcall(updatePlayerList)
-	if err then log(err) end
+	if err then log("updatePlayerList:", err) end
 end
 
 function CallbackHandlers.encodeModSave() end

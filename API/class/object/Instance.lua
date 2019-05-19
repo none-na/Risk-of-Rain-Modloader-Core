@@ -6,7 +6,11 @@ local gmobj = GMObject
 local static, lookup, meta, ids, special, children = NewClass("Instance", true, nil)
 
 __tostring_default_instance = function(obj)
-	return "<instance " .. obj:getObject():getName() .. " " .. tostring(obj.id) .. ">"
+	if obj:isValid() then
+		return "<" .. typeOf(obj) .. " " .. obj:getObject():getName() .. " " .. tostring(obj.id) .. ">"
+	else
+		return "<" .. typeOf(obj) .. " (destroyed)>"
+	end
 end
 meta.__tostring = __tostring_default_instance
 
@@ -298,6 +302,20 @@ lookup.id = {
 }
 lookup.ID = lookup.id
 
+-- Networking
+require "api/class/net/NetInstance"
+local getNetIdentity = GMInstance.getNetIdentity
+function lookup:getNetIdentity()
+	if not children[self] then methodCallError("Instance:getNetIdentity", self) end
+	local mid = fastGet(ids[self], "m_id")
+	if type(mid) ~= "number" then
+		error("this instance does not have a valid network identity", 2)
+	else
+		return getNetIdentity(mid, self:getObject())
+	end
+end
+
+-- Dump variables
 do
 	-- Hidden when advanced is false
 	local blockedNames = {
