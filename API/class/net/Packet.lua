@@ -100,7 +100,7 @@ function CallbackHandlers.HandleUserPacket(args)
 		local t = typeIDs[GML.readbyte()]
 		hargs[i] = decoders[t]()
 	end
-	CallModdedFunction(packet_handler[all_packets[modname][packetname:lower()]], hargs)
+	CallModdedFunction(packet_handler[all_packets[modname:lower()][packetname:lower()]], hargs)
 end
 
 function lookup:sendAsClient(...)
