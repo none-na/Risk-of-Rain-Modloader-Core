@@ -15,10 +15,10 @@ function RefreshNetAPI(tables)
 	net_online = coop
 
 	local host = true
-	net_host = host
 	if coop then
 		host = AnyTypeRet(GML.variable_global_get("host")) > 0
 	end
+	net_host = host
 
 	for _, v in ipairs(tables) do
 		rawset(v, "online", coop)
