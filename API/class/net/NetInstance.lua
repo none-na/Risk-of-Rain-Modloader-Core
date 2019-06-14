@@ -19,6 +19,7 @@ end}
 lookup.id = { get = function(self)
 	return identity_mid[self]
 end}
+lookup.ID = lookup.id
 
 function lookup:resolve()
 	if not children[self] then methodCallError("NetInstance:resolve", self) end
