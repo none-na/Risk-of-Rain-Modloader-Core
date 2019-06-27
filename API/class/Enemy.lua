@@ -10,8 +10,8 @@ local all_enemies = {vanilla = {}}
 local obj_parent = {
     enemy = GML.asset_get_index("pEnemy"),
     boss = GML.asset_get_index("pBoss"),
-    classicEnemy = GML.asset_get_index("pClassicEnemy"),
-    classicBoss = GML.asset_get_index("pClassicBoss")
+    classicEnemy = GML.asset_get_index("pEnemyClassic"),
+    classicBoss = GML.asset_get_index("pBossClassic")
 }
 
 -- Definition tables
@@ -48,8 +48,8 @@ local logFields = {
         remapId = 11
     }
 }
-local enemy_number = 46 -- 47 total vanilla enemies
-local log_number = 40 -- 41 total vanilla logs
+local enemy_number = 46 -- a total of 47 vanilla enemies
+local log_number = 40 -- a total of 41 vanilla logs
 
 local iwrap = GMInstance.iwrap
 
@@ -58,6 +58,7 @@ local obj_toID = GMObject.toID
 
 local id_to_enemy = {}
 local object_to_enemy = {}
+local enemy_to_object = {}
 local enemy_to_log_id = {}
 
 do
@@ -68,7 +69,8 @@ do
 	-- Get object from enemy
 	function lookup:getObject()
 		if not children[self] then methodCallError("Enemy:getObject", self) end
-        return obj_fromID(AnyTypeRet(GML.array_global_read_2(enemyGlobalTable, ids[self], enemyFields.spawnObject)))
+        -- return obj_fromID(AnyTypeRet(GML.array_global_read_2(enemyGlobalTable, ids[self], enemyFields.spawnObject)))
+        return enemy_to_object[self]
 	end
 
 	-- Get origin from enemy
@@ -117,7 +119,7 @@ do
 
         if AnyTypeRet(GML.array_global_read_2(logGlobalTable, iid, logFields.internal.hasLog)) ~= 1 then
             GML.array_global_write_2(logGlobalTable, AnyTypeArg(1), iid, logFields.internal.hasLog)
-            GML.array_global_write_1("mons_id_map", logNid, noid)
+            GML.ds_map_replace(GML.variable_global_get("mons_id_map"), logNid, noid)
         end
         
 		for k, _ in pairs(args) do
@@ -147,33 +149,6 @@ do
         local remapLogID = enemy_to_log_id[enemy]
         GML.array_global_write_2(logGlobalTable, AnyTypeArg(-1), logID, logFields.internal.hasLog)
         GML.array_global_write_2(logGlobalTable, AnyTypeArg(remapLogID), logID, logFields.internal.remapId)
-    end
-    
-    -- use skill
-    function lookup:useSkill(index, sprite, speed, cooldown, resetHSpeed)
-    	if not children[self] then methodCallError("Enemy.useSkill", self) end
-        if type(index) ~= "number" then typeCheckError("Enemy.useSkill", 1, "index", "number", index) end
-        if typeOf(sprite) ~= "Sprite" then typeCheckError("Enemy.useSkill", 2, "sprite", "Sprite", sprite) end
-        if type(speed) ~= "number" then typeCheckError("Enemy.useSkill", 3, "speed", "number", speed) end
-        if type(cooldown) ~= "number" then typeCheckError("Enemy.useSkill", 4, "cooldown", "number", cooldown) end
-        if type(resetHSpeed) ~= "boolean" then typeCheckError("Enemy.useSkill", 5, "resetHSpeed", "boolean", resetHSpeed) end
-        verifyInstCall(ids[self])
-
-        -- TODO: change thsiisiisisiis
-        
-        -- set activity
-        local t = GML.enemy_set_custom_activity_state(ids[self], index, SpriteUtil.toID(sprite), speed, 1, cooldown, resetHSpeed)
-        if t and t > 0 then
-            local msg
-            if t == 1 then
-                msg = "invalid activity index, expected < 5 and >= 1, got " .. tostring(index)
-            elseif t == 2 then
-                msg = "unable to make vanilla enemy use skill"
-            else
-                msg = "attempt to set custom activity state when activity is not zero"
-            end
-            error(msg, 3)
-        end
     end
     
     ---------------------
@@ -282,7 +257,7 @@ do
 		if not children[self] then methodCallError("Enemy:create", self) end
 		if type(x) ~= "number" then typeCheckError("Enemy:create", 1, "x", "number", x) end
 		if type(y) ~= "number" then typeCheckError("Enemy:create", 2, "y", "number", y) end
-		return iwrap(GML.instance_create(x, y, AnyTypeRet(GML.array_global_read_2(enemyGlobalTable, ids[self], enemyFields.spawnObject))))
+		return iwrap(GML.instance_create(x, y, obj_toID(enemy_to_object[self])))
 	end
 end
 ----------------------------
@@ -323,14 +298,13 @@ do
         end
 		GML.object_set_parent(noid, common_parent)
 		GML.object_set_depth(noid, -99)
-
 		-- Create new enemy
 		local new = static.new(nid)
 		-- Add to mod enemy table
 		contextInsert(all_enemies, name, context, new)
 
 		-- Set default enemy properties
-		GML.array_global_write_2(enemyGlobalTable, name, nid, enemyFields.realName)
+		GML.array_global_write_2(enemyGlobalTable, AnyTypeArg(name), nid, enemyFields.realName)
 		GML.array_global_write_2(enemyGlobalTable, AnyTypeArg(-1), nid, enemyFields.spawnType)
 		GML.array_global_write_2(enemyGlobalTable, AnyTypeArg(0), nid, enemyFields.pointsCost)
 		GML.array_global_write_2(enemyGlobalTable, AnyTypeArg(-1), nid, enemyFields.spawnSprite)
@@ -338,12 +312,12 @@ do
 		GML.array_global_write_2(enemyGlobalTable, AnyTypeArg(-1), nid, enemyFields.spawnSound)
 		GML.array_global_write_2(enemyGlobalTable, AnyTypeArg(isBoss and 1 or 0), nid, enemyFields.isBoss)
 		GML.array_global_write_2(enemyGlobalTable, AnyTypeArg(isClassic and 1 or 0), nid, enemyFields.isClassic)
-		GML.array_global_write_2(enemyGlobalTable, name, nid, enemyFields.displayName)
-		GML.array_global_write_2(enemyGlobalTable, context, nid, enemyFields.origin)
+		GML.array_global_write_2(enemyGlobalTable, AnyTypeArg(name), nid, enemyFields.displayName)
+		GML.array_global_write_2(enemyGlobalTable, AnyTypeArg(context), nid, enemyFields.origin)
 		enemy_callbacks[new] = {}
         
         -- Setup default log
-        GML.array_global_write_2(logGlobalTable, name, logNid, logFields.visible.displayName)
+        GML.array_global_write_2(logGlobalTable, AnyTypeArg(name), logNid, logFields.visible.displayName)
         GML.array_global_write_2(logGlobalTable, AnyTypeArg(""), logNid, logFields.visible.logStory)
         GML.array_global_write_2(logGlobalTable, AnyTypeArg(0), logNid, logFields.visible.logHP)
         GML.array_global_write_2(logGlobalTable, AnyTypeArg(0), logNid, logFields.visible.logDamage)
@@ -351,19 +325,18 @@ do
         GML.array_global_write_2(logGlobalTable, AnyTypeArg(-1), logNid, logFields.visible.logSprite)
         GML.array_global_write_2(logGlobalTable, AnyTypeArg(-1), logNid, logFields.visible.logPortrait)
         GML.array_global_write_2(logGlobalTable, AnyTypeArg(0), logNid, logFields.internal.unlocked)
-        GML.array_global_write_2(logGlobalTable, context, logNid, logFields.internal.origin)
-        GML.array_global_write_2(logGlobalTable, name, logNid, logFields.internal.realName)
+        GML.array_global_write_2(logGlobalTable, AnyTypeArg(context), logNid, logFields.internal.origin)
+        GML.array_global_write_2(logGlobalTable, AnyTypeArg(name), logNid, logFields.internal.realName)
         GML.array_global_write_2(logGlobalTable, AnyTypeArg(0), logNid, logFields.internal.hasLog)
         GML.array_global_write_2(logGlobalTable, AnyTypeArg(0), logNid, logFields.internal.remapId)
         
 		-- GML side function which automatically initializes all enemy info and loads from the save
-        -- NOTE: probably also has to insert into "enemy_id_map"
 		GML.init_enemy(nid, logNid)
         
         object_to_enemy[newObj] = new
+        enemy_to_object[new] = newObj
         id_to_enemy[nid] = new
         enemy_to_log_id[new] = logNid
-        
 		return new
 	end
 	-- New enemy
@@ -407,38 +380,119 @@ function Enemy.setInitialStats(enemyInstance, health, damage, exp_worth, armor)
     }
     
 	-- Health
-	local thp = health * GML.get_stats_multiplier(AnyTypeArg(stats.hp))
+	local thp = health * GML.get_stats_multiplier(stats.hp)
 	GML.variable_instance_set(id, "hp", AnyTypeArg(thp))
 	GML.variable_instance_set(id, "maxhp", AnyTypeArg(thp))
 
 	-- Damage
-	local tdamage = damage * GML.get_stats_multiplier(AnyTypeArg(stats.damage))
+	local tdamage = damage * GML.get_stats_multiplier(stats.damage)
 	GML.variable_instance_set(id, "damage", AnyTypeArg(tdamage))
 
 	-- Exp Worth
-	local texp = exp_worth * GML.get_stats_multiplier(AnyTypeArg(stats.exp_worth))
+	local texp = exp_worth * GML.get_stats_multiplier(stats.exp_worth)
 	GML.variable_instance_set(id, "exp_worth", AnyTypeArg(texp))
     
 	-- Armor
-	local tarmor = armor * GML.get_stats_multiplier(AnyTypeArg(stats.armor))
+	local tarmor = armor * GML.get_stats_multiplier(stats.armor)
 	GML.variable_instance_set(id, "armor", AnyTypeArg(tarmor))
 end
 
+-- Set enemy sound effects
+
+function Enemy.setSounds(enemyInstance, soundTable)
+	if typeOf(enemyInstance) ~= "ActorInstance" then typeCheckError("Enemy.setSounds", 1, "enemyInstance", "ActorInstance", enemyInstance) end
+	if typeOf(soundTable) ~= "table" then typeCheckError("Enemy.setSounds", 2, "soundTable", "named arguments", soundTable) end
+    
+    local enemySounds = {
+        hit = 0,
+        death = 1
+    }
+    
+    for k, _ in pairs(soundTable) do
+        if enemySounds[k] then
+            local v = rawget(soundTable, k)
+            if typeOf(v) ~= "Sound" then typeCheckError("Enemy.setSounds", 2, "soundTable."..tostring(k), "Sound", v) end
+            if enemySounds[k] == 0 then -- hit
+                enemyInstance:set("sound_hit", SoundUtil.ids[v])
+            else -- death
+                enemyInstance:set("sound_death", SoundUtil.ids[v])
+            end
+        end
+    end
+end
+
+-- Set enemy sprites
+
+function Enemy.setSprites(enemyInstance, spriteTable)
+	if typeOf(enemyInstance) ~= "ActorInstance" then typeCheckError("Enemy.setSprites", 1, "enemyInstance", "ActorInstance", enemyInstance) end
+	if typeOf(spriteTable) ~= "table" then typeCheckError("Enemy.setSprites", 2, "spriteTable", "named arguments", spriteTable) end
+    
+    local enemySprites = {
+        idle = 0,
+        walk = 1,
+        jump = 2,
+        death = 3
+    }
+    
+    for k, _ in pairs(spriteTable) do
+        if enemySprites[k] then
+            local v = rawget(spriteTable, k)
+            if typeOf(v) ~= "Sprite" then typeCheckError("Enemy.setSprites", 2, "spriteTable."..tostring(k), "Sprite", v) end
+            if enemySprites[k] == 0 then -- idle
+                enemyInstance:set("sprite_idle", SpriteUtil.toID(v))
+            elseif enemySprites[k] == 1 then -- walk
+                enemyInstance:set("sprite_walk", SpriteUtil.toID(v))
+            elseif enemySprites[k] == 2 then -- jump
+                enemyInstance:set("sprite_jump", SpriteUtil.toID(v))
+            else -- death
+                enemyInstance:set("sprite_death", SpriteUtil.toID(v))
+            end
+        end
+    end
+end
+
+-- use skill
+
+function Enemy.useSkill(enemyInstance, index, sprite, speed, cooldown, resetHSpeed)
+    if typeOf(enemyInstance) ~= "ActorInstance" then typeCheckError("Enemy.useSkill", 1, "enemyInstance", "ActorInstance", enemyInstance) end
+    if type(index) ~= "number" then typeCheckError("Enemy.useSkill", 2, "index", "number", index) end
+    if typeOf(sprite) ~= "Sprite" then typeCheckError("Enemy.useSkill", 3, "sprite", "Sprite", sprite) end
+    if type(speed) ~= "number" then typeCheckError("Enemy.useSkill", 4, "speed", "number", speed) end
+    if type(cooldown) ~= "number" then typeCheckError("Enemy.useSkill", 5, "cooldown", "number", cooldown) end
+    if type(resetHSpeed) ~= "boolean" then typeCheckError("Enemy.useSkill", 6, "resetHSpeed", "boolean", resetHSpeed) end
+
+    -- TODO: change thsiisiisisiis
+    
+    -- set activity
+    local t = GML.enemy_set_custom_activity_state(enemyInstance, index, SpriteUtil.toID(sprite), speed, 1, cooldown, resetHSpeed)
+    if t and t > 0 then
+        local msg
+        if t == 1 then
+            msg = "invalid activity index, expected < 5 and >= 1, got " .. tostring(index)
+        -- elseif t == 2 then
+            -- msg = "unable to make vanilla enemy use skill"
+        else
+            msg = "attempt to set custom activity state when activity is not zero"
+        end
+        error(msg, 3)
+    end
+end
 
 ----------------
 ----- Misc -----
 ----------------
 -- Wrap vanilla enemies
-for i = 0, enemy_number do
+for i = 0, enemy_number - 2 do -- unimplemented enemies are skipped (last two); this does create a hole in the ids but it shouldn't be a problem
 	local n = static.new(i)
     enemy_callbacks[n] = {}
     
-    local eObj = AnyTypeRet(GML.array_global_read_2(enemyGlobalTable, AnyTypeArgs(i), enemyFields.spawnObject))
-    
-    object_to_enemy[eObj] = n
-    id_to_enemy[i] = n
-    enemy_to_log_id[n] = AnyTypeRet(GML.array_global_read_1("mons_id_map", obj_toID(eObj)))
+    local eObj = AnyTypeRet(GML.array_global_read_2(enemyGlobalTable, i, enemyFields.spawnObject))
 
+    object_to_enemy[obj_fromID(eObj)] = n
+    enemy_to_object[n] = obj_fromID(eObj)
+    id_to_enemy[i] = n
+    enemy_to_log_id[n] = AnyTypeRet(GML.ds_map_find_value(GML.variable_global_get("mons_id_map"), AnyTypeArg(eObj)))
+    
     all_enemies.vanilla[string.lower(AnyTypeRet(GML.array_global_read_2(enemyGlobalTable, i, enemyFields.realName)))] = n
 end
 
@@ -465,13 +519,14 @@ function RoREnemy.fromID(enemy)
 	return id_to_enemy[enemy]
 end
 function RoREnemy.toObjID(enemy)
-	return AnyTypeRet(GML.array_global_read_2(enemyGlobalTable, ids[enemy], enemyFields.spawnObject))
+	-- return AnyTypeRet(GML.array_global_read_2(enemyGlobalTable, ids[enemy], enemyFields.spawnObject))
+    return obj_toID(enemy_to_object[enemy])
 end
 function RoREnemy.fromObjID(enemy)
 	return object_to_enemy[obj_fromID(enemy)]
 end
 function RoREnemy.fromObj(enemy)
-	return object_to_enemy[item]
+	return object_to_enemy[enemy]
 end
 
 -- env
