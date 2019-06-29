@@ -89,6 +89,23 @@ function Sound.load(name, fname)
 	return load_sound("Sound.load", name, fname)
 end
 
+function Sound.getMusic()
+	-- Note this may return nil
+	-- music_name being an invalid sound ID is possible
+	return id_to_sound[AnyTypeRet(GML.variable_global_get("music_name"))]
+end
+
+function Sound.setMusic(music)
+	if music ~= nil and typeOf(music) ~= "Sound" then typeCheckError("Sound.setMusic", 1, "music", "Sound or nil", music) end
+	local musicID
+	if music == nil then
+		musicID = -10
+	else
+		musicID = ids[music]
+	end
+	GML.variable_global_set("music_name", AnyTypeArg(musicID))
+end
+
 setmetatable(Sound, {__call = function(t, name, fname)
 	return load_sound("Sound", name, fname)
 end})
