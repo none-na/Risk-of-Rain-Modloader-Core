@@ -247,7 +247,8 @@ do
 	-- List of locked objects
 	-- Objects that can be accessed by mods but you cant really do anything with them
 	local object_lock_list = {
-		"oDirectorControl"
+		"oDirectorControl",
+		"oHUD"
 	}
 
 	
@@ -260,7 +261,7 @@ do
 		"oHighscore", "oSelect", "oSelectCoop",
 		"oSelectMult", "oFairItemButton", "oCharPalette",
 		"oCredits", "oEfGameBeat", "oMenu",
-		"oHUD", "oAchievement", "oError",
+		"oAchievement", "oError",
 		-- Control objects
 		"objClient", "objServer", "oPrePlayer", "oInit", "oConsole",
 		"rousrDissonance", "oTransformInto", "oCustomRoomControl", "oCustomRoomLayer",
