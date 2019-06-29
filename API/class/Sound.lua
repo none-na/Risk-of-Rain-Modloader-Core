@@ -73,7 +73,7 @@ function load_sound(funcName, name, fname)
 	end
 	
 	if s < 0 then
-		return error(string.format('unable to load sound %q, the file could not be found', fname))
+		return error(string.format('unable to load sound %q, the file could not be found or is corrupted', fname))
 	else
 		local new = static.new(s)
 		registerNetID("sound", s, context, name)
@@ -97,19 +97,20 @@ do
 	local ttable = all_sounds.vanilla
 	local t = 0
 	while true do
-		local rawname = ffi.string(GML.sound_get_name(t))
-		if rawname == "<undefined>" then
-			-- Just checking if sounds exist seems to actually end up returning that more than a thousand nonexistent sounds actually exist
-			-- Super weird but its just safer to do this I guess
+		local name = ffi.string(GML.sound_get_name(t))
+		if name == "<undefined>" then
 			break
 		else
-			local new = static.new(t)
-			local name = string.sub(rawname, 2, -1)
+			local trueID = GML.sound_get_id(t)
+			local new = static.new(trueID)
+			if name:sub(1, 1) == "w" then
+				name = string.sub(name, 2, -1)
+			end
 			ttable[string.lower(name)] = new
 
 			sound_name[new] = name
 			sound_origin[new] = "vanilla"
-			id_to_sound[t] = new
+			id_to_sound[trueID] = new
 
 			t = t + 1
 		end
