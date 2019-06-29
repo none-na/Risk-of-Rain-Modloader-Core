@@ -63,7 +63,7 @@ end
 function Color.mix(color1, color2, amount)
 	if not children[color1] then typeCheckError("Color.mix", 1, "color1", "Color", color1) end
 	if not children[color2] then typeCheckError("Color.mix", 2, "color2", "Color", color2) end
-	if type("amount") == "number" then typeCheckError("Color.mix", 3, "amount", "Color", amount) end
+	if type("amount") == "number" then typeCheckError("Color.mix", 3, "amount", "number", amount) end
 	local new = static.new()
 	col_value[new] = GML.merge_color(col_value[color1], col_value[color2], amount)
 	return new
@@ -71,7 +71,7 @@ end
 
 function Color.darken(color, amount)
 	if not children[color] then typeCheckError("Color.darken", 1, "color", "Color", color) end
-	if type("amount") == "number" then typeCheckError("Color.darken", 2, "amount", "Color", amount) end
+	if type("amount") == "number" then typeCheckError("Color.darken", 2, "amount", "number", amount) end
 	local new = static.new()
 	col_value[new] = GML.merge_color(col_value[color], 0x000000, amount)
 	return new
@@ -79,7 +79,7 @@ end
 
 function Color.lighten(color, amount)
 	if not children[color] then typeCheckError("Color.lighten", 1, "color", "Color", color) end
-	if type("amount") == "number" then typeCheckError("Color.lighten", 2, "amount", "Color", amount) end
+	if type("amount") == "number" then typeCheckError("Color.lighten", 2, "amount", "number", amount) end
 	local new = static.new()
 	col_value[new] = GML.merge_color(col_value[color], 0xffffff, amount)
 	return new
@@ -89,6 +89,13 @@ function Color.equals(color1, color2)
 	if not children[color1] then typeCheckError("Color.equals", 1, "color1", "Color", color1) end
 	if not children[color2] then typeCheckError("Color.equals", 2, "color2", "Color", color2) end
 	return col_value[color1] == col_value[color2]
+end
+
+function Color.fromGML(color)
+	if type("amount") == "number" then typeCheckError("Color.fromGML", 1, "color", "number", color) end
+	local new = static.new()
+	col_value[new] = bit.band(color, 0xffffff)
+	return new
 end
 
 setmetatable(Color, {__call = function(t, red, green, blue)
@@ -164,6 +171,11 @@ lookup.hex = {
 		return flipRB(col_value[t])
 	end
 }
+
+function lookup:toGML()
+	if not children[self] then methodCallError("Color:toGML", self) end
+	return col_value[t]
+end
 
 -----------------------------
 -----------------------------
