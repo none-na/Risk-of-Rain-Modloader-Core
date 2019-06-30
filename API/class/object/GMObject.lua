@@ -118,6 +118,11 @@ function lookup:getName()
 	return object_name[self]
 end
 
+lookup.id = {get = function(sound)
+	return ids[self]
+end}
+lookup.ID = lookup.id
+
 
 -- Event binding
 do
@@ -407,6 +412,11 @@ function Object.findInstance(id)
 			return iwrap(id)
 		end
 	end
+end
+
+function Object.fromID(id)
+	if type(id) ~= "number" then typeCheckError("Object.fromID", 1, "id", "number", id) end
+	return id_to_object[id]
 end
 
 require("api/deprecated/ObjectGroup")
