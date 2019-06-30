@@ -17,7 +17,7 @@ sound_name = {}
 function lookup:play(pitch, volume)
 	if not children[self] then methodCallError("Sound:play", self) end
 	if type(pitch) ~= "number" and pitch ~= nil then typeCheckError("Sound:play", 1, "pitch", "number or nil", pitch) end
-	if type(volume) ~= "number" and volume ~= nil then typeCheckError("Sound:play", 1, "volume", "number or nil", volume) end
+	if type(volume) ~= "number" and volume ~= nil then typeCheckError("Sound:play", 2, "volume", "number or nil", volume) end
 	GML.sound_play_ext(ids[self], pitch or 1, volume or 1)
 end
 
@@ -45,6 +45,11 @@ function lookup:getName()
 	if not children[self] then methodCallError("Sound:getName", self) end
 	return sound_name[self]
 end
+
+lookup.id = {get = function(sound)
+	return ids[self]
+end}
+lookup.ID = lookup.id
 
 -----------------------------------------
 -- Global methods -----------------------
@@ -89,6 +94,11 @@ function Sound.load(name, fname)
 	return load_sound("Sound.load", name, fname)
 end
 
+setmetatable(Sound, {__call = function(t, name, fname)
+	return load_sound("Sound", name, fname)
+end})
+
+
 function Sound.getMusic()
 	-- Note this may return nil
 	-- music_name being an invalid sound ID is possible
@@ -106,9 +116,10 @@ function Sound.setMusic(music)
 	GML.variable_global_set("music_name", AnyTypeArg(musicID))
 end
 
-setmetatable(Sound, {__call = function(t, name, fname)
-	return load_sound("Sound", name, fname)
-end})
+function Sound.fromID(id)
+	if type(id) ~= "number" then typeCheckError("Sound.fromID", 1, "id", "number", id) end
+	return id_to_sound[id]
+end
 
 do
 	local ttable = all_sounds.vanilla
