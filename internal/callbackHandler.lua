@@ -1,3 +1,7 @@
+
+callback = {}
+mods.modenv.callback = callback
+
 local callbacks = {}
 local callbackslookup = {}
 local callbackdata = {}
@@ -45,7 +49,7 @@ function FireCallback(args)
 end
 CallbackHandlers.FireCallback = FireCallback
 
-function RegisterCallback(name, func, priority)
+function callback.register(name, func, priority)
 	verifyCallback(func)
 	priority = priority or 10
 
@@ -83,6 +87,10 @@ function RegisterCallback(name, func, priority)
 		end
 	end
 end
+-- Shortcut
+setmetatable(callback, {__call = function(_, ...) return callback.register(...) end})
+-- Legacy compat
+mods.modenv.registercallback = callback.register
 
 function AddCallback(name, descriptor)
 	if not descriptor then descriptor = {} end
@@ -99,7 +107,7 @@ local function FireModCallback(name, ...)
 	currentModContext = context
 end
 
-function mods.modenv.createcallback(name)
+function callback.create(name)
 	if type(name) ~= "string" then typeCheckError("CreateCallback", 1, "name", "string", name) end
 	if callbackdata[name] then
 		error("callback '" .. name .. "' already exists (duplicate callback in " .. GetModContext() .. ", original in " .. (callbackdata[name].origin or "ModLoaderCore") .. ")", 2)
@@ -112,4 +120,3 @@ function mods.modenv.createcallback(name)
 		FireModCallback(name, ...)
 	end
 end
-mods.modenv.registercallback = RegisterCallback
