@@ -133,6 +133,28 @@ function save.readMod(mod, key)
 	return trueRead(mod, key)
 end
 
+function save.getKeys(mod)
+	if mod ~= nil and type(mod) ~= "string" then typeCheckError("save.getKeys", 1, "mod", "string or nil", mod) end
+	mod = mod or GetModContext()
+	if saveDat[mod] == nil then
+		return {}
+	else
+		local t = {}
+		for k, _ in pairs(saveDat[mod]) do
+			t[#t + 1] = k
+		end
+		return t
+	end
+end
+
+function save.getMods()
+	local t = {}
+	for k, _ in pairs(saveDat) do
+		t[#t + 1] = k
+	end
+	return t
+end
+
 function CallbackHandlers.encodeModSave()
 	GML.ds_map_replace(
 		AnyTypeRet(GML.variable_global_get("save_mods")),
