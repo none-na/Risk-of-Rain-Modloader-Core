@@ -89,8 +89,7 @@ function callback.register(name, func, priority)
 end
 -- Shortcut
 setmetatable(callback, {__call = function(_, ...) return callback.register(...) end})
--- Legacy compat
-mods.modenv.registercallback = callback.register
+
 
 function AddCallback(name, descriptor)
 	if not descriptor then descriptor = {} end
@@ -120,3 +119,7 @@ function callback.create(name)
 		FireModCallback(name, ...)
 	end
 end
+
+-- Legacy compat
+mods.modenv.registercallback = callback.register
+mods.modenv.createcallback = callback.create
