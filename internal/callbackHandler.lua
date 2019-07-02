@@ -12,6 +12,26 @@ local defaultcallbackdata = {
 	types = {},
 }
 
+local function FireCallbackInternal(name, dat, args)
+	local cancellable = dat.cancellable
+	local returnType = dat.returnType
+
+	for _, v in ipairs(callbacks[name]) do
+		local v = CallModdedFunction(v.func, args)
+		if returnType then
+			if typeOf(v) == returnType then
+				return dat.returnFunc and dat.returnFunc(v) or v
+			else
+				-- error handling here? ? ?? ?? ?? ??
+			end
+		elseif cancellable and v then
+			return 1
+		end
+	end
+
+	return nil
+end
+
 function FireCallback(args)
 	local name = args[1]
 	if not callbacks[name] then return end
@@ -27,25 +47,7 @@ function FireCallback(args)
 		end
 	end
 
-	local cancellable = dat.cancellable
-	local returnType = dat.returnType
-
-	for _, v in ipairs(callbacks[name]) do
-		local v = CallModdedFunction(v.func, args)
-		if v then
-			if returnType then
-				if typeOf(v) == returnType then
-					return dat.returnFunc and dat.returnFunc(v) or v
-				else
-					-- error handling here? ? ?? ?? ?? ??
-				end
-			elseif cancellable then
-				return 1
-			end
-		end
-	end
-
-	return nil
+	FireCallbackInternal(name, dat, args)
 end
 CallbackHandlers.FireCallback = FireCallback
 
@@ -107,7 +109,7 @@ local function FireModCallback(name, ...)
 end
 
 function callback.create(name)
-	if type(name) ~= "string" then typeCheckError("CreateCallback", 1, "name", "string", name) end
+	if type(name) ~= "string" then typeCheckError("callback.create", 1, "name", "string", name) end
 	if callbackdata[name] then
 		error("callback '" .. name .. "' already exists (duplicate callback in " .. GetModContext() .. ", original in " .. (callbackdata[name].origin or "ModLoaderCore") .. ")", 2)
 	end
