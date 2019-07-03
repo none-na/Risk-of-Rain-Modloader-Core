@@ -34,6 +34,10 @@ AddCallback("onNPCDeathProc", {
 AddCallback("onActorInit", {
     types = {iwrap},
     callTypes = {"ActorInstance"}}) -- id
+AddCallback("onDamage", {
+    types = {iwrap, tonumber, iwrap},
+    callTypes = {"ActorInstance", "number", "Instance"},
+    cancellable = true}) -- id
 
 --  Player
 AddCallback("onPlayerInit", {
