@@ -2,7 +2,7 @@ local iwrap = GMInstance.iwrap
 local function siwrap(id)
     -- same as iwrap but for instances in their destroy event
     VerifiedInstances[id] = 2
-    return iwrap(id)
+    return iwrap(id, true)
 end
 
 -- Items
