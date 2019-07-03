@@ -172,10 +172,11 @@ lookup.hex = {
 	end
 }
 
-function lookup:toGML()
-	if not children[self] then methodCallError("Color:toGML", self) end
-	return col_value[t]
-end
+lookup.gml = {
+	get = function(t)
+		return col_value[t]
+	end
+}
 
 -----------------------------
 -----------------------------
