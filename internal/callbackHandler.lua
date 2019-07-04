@@ -47,7 +47,7 @@ function FireCallback(args)
 		end
 	end
 
-	FireCallbackInternal(name, dat, args)
+	return FireCallbackInternal(name, dat, args)
 end
 CallbackHandlers.FireCallback = FireCallback
 
