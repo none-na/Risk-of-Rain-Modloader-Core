@@ -15,7 +15,7 @@ local packet_handler = {}
 local function newPacket(fname, name, handler)
 	if type(name) ~= "string" then typeCheckError(fname, 1, "name", "string", name, 1) end
 	if type(handler) ~= "function" then typeCheckError(fname, 2, "handler", "function", handler, 1) end
-	verifyCallback(bind, 1)
+	verifyCallback(handler, 1)
 	local context = GetModContext()
 	contextVerify(all_packets, name, context, "Packet", 1)
 	local new = static.new(nid)
