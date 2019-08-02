@@ -96,7 +96,7 @@ function CallbackHandlers.HandleUserPacket(args)
 	local hargs = {sender}
 	-- ADD CODE TO CHECK FOR END OF PACKET
 	local count = GML.readint()
-	for i = 1, count do
+	for i = 2, count + 1 do
 		local t = typeIDs[GML.readbyte()]
 		hargs[i] = decoders[t]()
 	end
