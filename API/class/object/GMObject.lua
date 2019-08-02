@@ -185,7 +185,7 @@ do
 			if objectEvents[obj][ev] then
 				-- Wrap instances
 				VerifiedInstances[id] = 2
-				id = iwrap(id)
+				id = iwrap(id, true)
 				if special then special = iwrap(special) end
 				-- Call events
 				local args = {id, special}
