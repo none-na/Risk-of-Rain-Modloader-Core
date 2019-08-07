@@ -20,7 +20,6 @@ local item_is_use = {}
 local item_is_modded = {}
 local item_callbacks = {}
 local item_origin = {}
-local item_log_index = {}
 local item_number = 115
 local item_log_number = 109
 local item_col = {}
@@ -157,17 +156,18 @@ do
 			end
 		end
 
-		if item_log_index[self] == nil then
+		local old_index = GML.ds_list_find_index(log_list, AnyTypeArg(ids[self]))
+
+		if old_index < 0 then
 			GML.array_write_2(iid, 13, AnyTypeArg(1))
 		end
 
 		if rgroup then
 			-- Remove existing log
-			if item_log_index[self] then
-				curr = item_log_index[self]
-				GML.ds_list_delete(log_list, curr)
+			if old_index >= 0 then
+				GML.ds_list_delete(log_list, old_index)
 				for k, v in pairs(log_categories) do
-					if v >= curr then
+					if v >= old_index then
 						log_categories[k] = v - 1
 					end
 				end
@@ -400,9 +400,6 @@ for i = 0, item_number do
 	item_is_use[n] = (AnyTypeRet(GML.array_read_2(i, 14)) == 1)
 	item_col[n] = AnyTypeRet(GML.array_read_2(i, 17))
 	item_origin[n] = "Vanilla"
-	if i <= item_number - 11 then
-		item_log_index[n] = i
-	end
 	item_callbacks[n] = {}
 	all_items.vanilla[string.lower(item_name[n])] = n
 	object_to_item[item_object[n]] = n
