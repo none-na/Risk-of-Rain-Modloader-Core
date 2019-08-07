@@ -50,6 +50,7 @@ local signature_to_mod = {}
 
 local playerLists = {}
 local miscTables = {}
+local netTables = {}
 
 do
 	local function formatErrorLine(v)
@@ -362,6 +363,7 @@ local function loadFromFile(s, dat, nocopy)
 	end
 	newenv._G = newenv
 	table.insert(miscTables, newenv.misc)
+	table.insert(netTables, newenv.net)
 	table.insert(playerLists, newenv.misc.players)
 	
 	dat.env = newenv
@@ -426,28 +428,47 @@ do
 	function public.clearPlayerList()
 		for _, v in ipairs(playerLists) do
 			for k, _ in ipairs(v) do
-				rawset(v, k, nil)
+				v[k] = nil
 			end
 		end
 	end
 
 	local playerObj = nil
+	local oldHUD = nil
 	function public.updatePlayerList()
 		if playerObj == nil then
 			playerObj = Object.find("p", "vanilla")
 		end
-		local players = playerObj:findAll()
+		local playersFalse = playerObj:findAll()
+		local players = {}
+		local count = 0
+		for _, v in ipairs(playersFalse) do
+			if v:isValid() then
+				count = count + 1
+				players[count] = v
+			end
+		end
+
 		for _, v in ipairs(playerLists) do
 			for k, p in ipairs(players) do
 				rawset(v, k, p)
 			end
 		end
+
+		if oldHUD ~= GML_hud_instance_id then
+			oldHUD = GML_hud_instance_id
+			local hudInst = GMInstance.iwrap(GML_hud_instance_id)
+			for _, v in ipairs(miscTables) do
+				rawset(v, "hud", hudInst)
+				rawset(v, "HUD", hudInst)
+			end
+		end
 	end
 
 	function public.updateDirectorInstance()
-		local inst = GMInstance.iwrap(GML_director_instance_id)
+		local directorInst = GMInstance.iwrap(GML_director_instance_id)
 		for _, v in ipairs(miscTables) do
-			rawset(v, "director", inst)
+			rawset(v, "director", directorInst)
 		end
 	end
 end
@@ -461,5 +482,6 @@ public.modenv = modenv
 public.aliases = aliases
 public.mods = mods
 public.modlist = modlist
+public.netAPIList = netTables
 
 return public

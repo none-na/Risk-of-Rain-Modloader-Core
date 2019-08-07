@@ -1,3 +1,7 @@
+
+callback = {}
+mods.modenv.callback = callback
+
 local callbacks = {}
 local callbackslookup = {}
 local callbackdata = {}
@@ -7,6 +11,26 @@ local defaultcallbackdata = {
 	noGML = true,
 	types = {},
 }
+
+local function FireCallbackInternal(name, dat, args)
+	local cancellable = dat.cancellable
+	local returnType = dat.returnType
+
+	for _, v in ipairs(callbacks[name]) do
+		local v = CallModdedFunction(v.func, args)
+		if returnType then
+			if typeOf(v) == returnType then
+				return dat.returnFunc and dat.returnFunc(v) or v
+			else
+				-- error handling here? ? ?? ?? ?? ??
+			end
+		elseif cancellable and v then
+			return 1
+		end
+	end
+
+	return nil
+end
 
 function FireCallback(args)
 	local name = args[1]
@@ -23,29 +47,11 @@ function FireCallback(args)
 		end
 	end
 
-	local cancellable = dat.cancellable
-	local returnType = dat.returnType
-
-	for _, v in ipairs(callbacks[name]) do
-		local v = CallModdedFunction(v.func, args)
-		if v then
-			if returnType then
-				if typeOf(v) == returnType then
-					return dat.returnFunc and dat.returnFunc(v) or v
-				else
-					-- error handling here? ? ?? ?? ?? ??
-				end
-			elseif cancellable then
-				return 1
-			end
-		end
-	end
-
-	return nil
+	return FireCallbackInternal(name, dat, args)
 end
 CallbackHandlers.FireCallback = FireCallback
 
-function RegisterCallback(name, func, priority)
+function callback.register(name, func, priority)
 	verifyCallback(func)
 	priority = priority or 10
 
@@ -83,6 +89,9 @@ function RegisterCallback(name, func, priority)
 		end
 	end
 end
+-- Shortcut
+setmetatable(callback, {__call = function(_, ...) return callback.register(...) end})
+
 
 function AddCallback(name, descriptor)
 	if not descriptor then descriptor = {} end
@@ -99,8 +108,8 @@ local function FireModCallback(name, ...)
 	currentModContext = context
 end
 
-function mods.modenv.createcallback(name)
-	if type(name) ~= "string" then typeCheckError("CreateCallback", 1, "name", "string", name) end
+function callback.create(name)
+	if type(name) ~= "string" then typeCheckError("callback.create", 1, "name", "string", name) end
 	if callbackdata[name] then
 		error("callback '" .. name .. "' already exists (duplicate callback in " .. GetModContext() .. ", original in " .. (callbackdata[name].origin or "ModLoaderCore") .. ")", 2)
 	end
@@ -112,4 +121,7 @@ function mods.modenv.createcallback(name)
 		FireModCallback(name, ...)
 	end
 end
-mods.modenv.registercallback = RegisterCallback
+
+-- Legacy compat
+mods.modenv.registercallback = callback.register
+mods.modenv.createcallback = callback.create

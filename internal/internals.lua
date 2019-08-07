@@ -118,8 +118,11 @@ local getCBArgs = GetCBArgs
 local type = type
 
 local callbackName
+local collectGarbage
 local function handle_callback()
-	local rt = callbackHandlers[callbackName](getCBArgs())
+	local args = getCBArgs()
+	collectGarbage()
+	local rt = callbackHandlers[callbackName](args)
 	Apollo.clean_strings()
 	if rt ~= nil then
 		local ty = type(rt)
@@ -156,6 +159,8 @@ Apollo.set_callback_handler(function(name)
 	xpcall(handle_callback, handle_error)
 end)
 
-
+table.insert(CallWhenLoaded, function()
+	collectGarbage = GMInstance.collectGarbage
+end)
 
 

@@ -31,6 +31,10 @@ function lookup:replace(new)
 	GML.sprite_assign(ids[self], ids[new])
 end
 
+lookup.id = {get = function(sound)
+	return ids[self]
+end}
+lookup.ID = lookup.id
 
 -- Wrap basegame sprites
 do
@@ -114,6 +118,11 @@ end
 setmetatable(Sprite, {__call = function(t, name, fname, frames, xorigin, yorigin)
 	return load_sprite("Sprite", name, fname, frames, xorigin, yorigin)
 end})
+
+function Sprite.fromID(id)
+	if type(id) ~= "number" then typeCheckError("Sprite.fromID", 1, "id", "number", id) end
+	return id_to_sprite[id]
+end
 --
 SpriteUtil.class = static
 function SpriteUtil.fromID(id)

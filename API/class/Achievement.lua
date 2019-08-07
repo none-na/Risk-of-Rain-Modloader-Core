@@ -43,6 +43,16 @@ local id_to_achievement = {}
 local default_sprite = SpriteUtil.fromID(GML.asset_get_index("sRandom"))
 local maxachievement = 54 -- 0 also belongs, so 55 total
 
+local function checkCheevoFinished(cheev, max)
+	local progress = AnyTypeRet(GML.array_global_read_2("achievement_list", ids[cheev], fieldID.progress))
+	local deathReset = AnyTypeRet(GML.array_global_read_2("achievement_list", ids[cheev], fieldID.deathReset)) > 0
+	local value = 0
+	if progress >= max or (deathReset and progress > 0) then
+		value = 2
+	end
+	GML.array_global_write_2("achievement_list", AnyTypeArg(value), ids[cheev], fieldID.finished)
+end
+
 ------------------------------------------
 -- COMMON -------------------------------
 ------------------------------------------
@@ -90,18 +100,12 @@ function lookup:assignUnlockable(thing)
         thingID = RoRSurvivor.toID(thing)
         self.sprite = thing.titleSprite
         self.unlockText = "This character is now playable."
-        -- GML.array_open("class_info")
-        -- GML.array_write_2(thingID, 3, AnyTypeArg(ids[self]))
-        -- GML.array_close()
-        GML.array_global_write_2("class_info", AnyTypeArg(ids[self]), thingID, 3)
+        GML.array_global_write_2("class_info", AnyTypeArg(ids[self]), thingID, 20)
     else
         thingID = RoRItem.toID(thing)
         self.sprite = thing.sprite
         self.unlockText = "This item will now drop."
-        -- GML.array_open("item_info")
-        -- GML.array_write_2(thingID, 20, AnyTypeArg(ids[self]))
-        -- GML.array_close()
-        GML.array_global_write_2("item_info", AnyTypeArg(ids[self]), thingID, 20)
+        GML.array_global_write_2("item_info", AnyTypeArg(ids[self]), thingID, 3)
     end
 end
 
@@ -128,6 +132,8 @@ lookup.requirement = {
         
 		--achievement_requirement[t] = v
 		GML.array_global_write_2("achievement_list", AnyTypeArg(v), ids[t], fieldID["requirement"])
+
+		checkCheevoFinished(t, v)
 	end
 }
 
@@ -170,6 +176,8 @@ lookup.deathReset = {
 
 		--achievement_death_reset[t] = v
 		GML.array_global_write_2("achievement_list", AnyTypeArg(v and 1 or 0), ids[t], fieldID["deathReset"])
+
+		checkCheevoFinished(t, 1)
 	end
 }
 
@@ -342,6 +350,8 @@ local function achievement_new(name)
     achievement_callbacks[new] = {}
 
 	GML.achievement_add(nid, name, context)
+
+	checkCheevoFinished(new, 1)
 
 	return new
 end
