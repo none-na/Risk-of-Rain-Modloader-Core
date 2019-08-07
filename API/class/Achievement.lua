@@ -45,7 +45,7 @@ local maxachievement = 54 -- 0 also belongs, so 55 total
 
 local function checkCheevoFinished(cheev, max)
 	local progress = AnyTypeRet(GML.array_global_read_2("achievement_list", ids[cheev], fieldID.progress))
-	local deathReset = AnyTypeRet(GML.array_global_read_2("achievement_list", ids[cheev], fieldID.deathReset))
+	local deathReset = AnyTypeRet(GML.array_global_read_2("achievement_list", ids[cheev], fieldID.deathReset)) > 0
 	local value = 0
 	if progress >= max or (deathReset and progress > 0) then
 		value = 2
