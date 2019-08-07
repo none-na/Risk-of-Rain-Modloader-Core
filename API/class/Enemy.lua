@@ -50,6 +50,7 @@ local logFields = {
 }
 local enemy_number = 46 -- a total of 47 vanilla enemies
 local log_number = 40 -- a total of 41 vanilla logs
+local log_number_unlockable = 31 -- a total of 31 logs that can be unlocked
 
 local iwrap = GMInstance.iwrap
 
@@ -119,7 +120,11 @@ do
 
         if AnyTypeRet(GML.array_global_read_2(logGlobalTable, iid, logFields.internal.hasLog)) ~= 1 then
             GML.array_global_write_2(logGlobalTable, AnyTypeArg(1), iid, logFields.internal.hasLog)
-            GML.ds_map_replace(GML.variable_global_get("mons_id_map"), logNid, noid)
+            -- TODO: this should really just be on a gml script
+            log_number_unlockable = log_number_unlockable + 1
+            GML.variable_global_set("mons_max_unlock_number", AnyTypeArg(log_number_unlockable))
+            GML.ds_list_add(AnyTypeRet(GML.variable_global_get("mons_info_list")), AnyTypeArg(iid))
+            GML.ds_map_replace(GML.variable_global_get("mons_id_map"), AnyTypeArg(obj_toID(enemy_to_object[self])), AnyTypeArg(iid))
         end
         
 		for k, _ in pairs(args) do
@@ -127,7 +132,7 @@ do
 				local v = rawget(args, k)
                 if logFields.visible[k] == logFields.visible.logSprite or logFields.visible[k] == logFields.visible.logPortrait then
                     -- lets not let the player set sprites at nil; if they want it empty then don't set it
-                    if type(v) ~= "Sprite" then typeCheckError("Enemy:setLog", 1, "args."..tostring(k), "Sprite", v) end
+                    if typeOf(v) ~= "Sprite" then typeCheckError("Enemy:setLog", 1, "args."..tostring(k), "Sprite", v) end
                     GML.array_global_write_2(logGlobalTable, AnyTypeArg(SpriteUtil.toID(v)), iid, logFields.visible[k])
                 else
                     if logFields.visible[k] == logFields.visible.logHP or logFields.visible[k] == logFields.visible.logDamage or logFields.visible[k] == logFields.visible.logSpeed then
@@ -179,7 +184,7 @@ do
             return result
 		end,
 		set = function(t, v)
-			if typeOf(v) ~= "string" then fieldTypeError("Enemy.spawnType", "string", v) end
+			if type(v) ~= "string" then fieldTypeError("Enemy.spawnType", "string", v) end
 			local result
 			if v == "inView" then result = 0
             elseif v == "bossSpawn" then result = 1
@@ -275,7 +280,7 @@ do
 		local nid = enemy_number
         log_number = log_number + 1
         local logNid = log_number
-		--GML.variable_global_set("mons_number", AnyTypeArg(nid))
+		GML.variable_global_set("mons_number", AnyTypeArg(logNid))
 
 		-- Create new GMObject
 		overrideModContext = "modLoaderCore"
