@@ -46,7 +46,7 @@ function lookup:getName()
 	return sound_name[self]
 end
 
-lookup.id = {get = function(sound)
+lookup.id = {get = function(self)
 	return ids[self]
 end}
 lookup.ID = lookup.id

@@ -31,7 +31,7 @@ function lookup:replace(new)
 	GML.sprite_assign(ids[self], ids[new])
 end
 
-lookup.id = {get = function(sound)
+lookup.id = {get = function(self)
 	return ids[self]
 end}
 lookup.ID = lookup.id

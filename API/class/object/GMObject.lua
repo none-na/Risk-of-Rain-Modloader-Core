@@ -128,7 +128,7 @@ function lookup:getName()
 	return object_name[self]
 end
 
-lookup.id = {get = function(sound)
+lookup.id = {get = function(self)
 	return ids[self]
 end}
 lookup.ID = lookup.id
