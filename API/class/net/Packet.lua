@@ -20,6 +20,7 @@ local function newPacket(fname, name, handler)
 	contextVerify(all_packets, name, context, "Packet", 1)
 	local new = static.new(nid)
 	contextInsert(all_packets, name, context, new)
+	modFunctionSources[handler] = context
 	packet_origin[new] = context
 	packet_name[new] = name
 	packet_handler[new] = handler
