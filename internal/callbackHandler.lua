@@ -64,7 +64,6 @@ function callback.register(name, func, priority)
 			GML.hook_set_active(name, 1)
 		end
 	end
-
 	if not callbackslookup[name][func] then
 		local t = {}
 		callbackslookup[name][func] = t
