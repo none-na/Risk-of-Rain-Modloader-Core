@@ -164,6 +164,8 @@ do
 			objectEvents[id] = {}
 		end
 
+		modFunctionSources[bind] = GetModContext()
+
 		local t = objectEvents[id][event]
 		if not t then
 			t = {}
