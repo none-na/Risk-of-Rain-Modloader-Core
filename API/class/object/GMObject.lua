@@ -252,7 +252,7 @@ do
 	-- List of spawn disabled objects
 	-- These mostly just crash the game or do other weird stuff
 	local object_nospawn_list = {
-		"oP", "oBullet", "oExplosion", "oEfPlayerDead", "oSpawn", "oBodyCollector", "oBody",
+		"oP", "oBullet", "oExplosion", "oEfPlayerDead", "oBodyCollector", "oBody",
 		"oWormBody", "oWormHead", "oWurmBody", "oWurmHead", "oWurmController",
 		"oCommandFinal", "oJellyLegs",
 	}
