@@ -27,6 +27,7 @@ GMObject.noSpawn = object_nospawn
 GMObject.noDestroy = object_nodestroy
 GMObject.ids = ids
 GMObject.ids_map = id_to_object
+GMObject.locked = object_locked
 
 GMInstance = {}
 local instance_object = setmetatable({}, {__mode = "k"})
