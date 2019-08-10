@@ -4,11 +4,8 @@ local typeOf = typeOf
 -- Create class
 local static, lookup, meta, ids, special, children = NewClass("GMObjectBase", true)
 
-local object_locked = {}
-
 GMObject = {}
 GMObject.baseClass = static
-GMObject.locked = object_locked
 
 require "api/class/object/gmobject"
 require "api/class/object/parentobject"
@@ -18,7 +15,6 @@ local iwrap = GMInstance.iwrap
 function lookup:find(n)
 	if not children[self] then methodCallError("GMObjectBase:find", self) end
 	if type(n) ~= "number" then typeCheckError("GMObjectBase:find", 1, "n", "number", n) end
-	if object_locked[self] then objectLockError(self) end
 
 	local inst = GML.instance_find(ids[self], n - 1)
 	if inst > 0 then
@@ -30,7 +26,6 @@ end
 
 function lookup:findAll()
 	if not children[self] then methodCallError("GMObjectBase:findAll", self) end
-	if object_locked[self] then objectLockError(self) end
 	
 	GML.instance_find_all(ids[self])
 	local res = PopNumbers()
@@ -43,7 +38,6 @@ end
 
 function lookup:count()
 	if not children[self] then methodCallError("GMObjectBase:count", self) end
-	if object_locked[self] then objectLockError(self) end
 	return GML.instance_number(ids[self])
 end
 
@@ -52,7 +46,6 @@ do
 	local legalOperators = {["=="] = true, ["~="] = true, ["<"] = true, [">"] = true, ["<="] = true, [">="] = true, };
 	function lookup:findMatching(...)
 		if not children[self] then methodCallError("GMObjectBase:findMatching", self) end
-		if object_locked[self] then objectLockError(self) end
 
 		local targs = {...}
 		for i = 1, #targs, 2 do
@@ -72,7 +65,6 @@ do
 
 	function lookup:findMatchingOp(...)
 		if not children[self] then methodCallError("GMObjectBase:findMatchingOp", self) end
-		if object_locked[self] then objectLockError(self) end
 
 		local targs = {...}
 		for i = 1, #targs, 3 do
@@ -96,7 +88,6 @@ end
 -- Shape finds
 function lookup:findNearest(x, y)
 	if not children[self] then methodCallError("GMObjectBase:findNearest", self) end
-	if object_locked[self] then objectLockError(self) end
 	if type(x) ~= "number" then typeCheckError("GMObjectBase:findNearest", 1, "x", "number", x) end
 	if type(y) ~= "number" then typeCheckError("GMObjectBase:findNearest", 2, "y", "number", y) end
 	
@@ -106,7 +97,6 @@ end
 
 function lookup:findFurthest(x, y)
 	if not children[self] then methodCallError("GMObjectBase:findFurthest", self) end
-	if object_locked[self] then objectLockError(self) end
 	if type(x) ~= "number" then typeCheckError("GMObjectBase:findFurthest", 1, "x", "number", x) end
 	if type(y) ~= "number" then typeCheckError("GMObjectBase:findFurthest", 2, "y", "number", y) end
 
@@ -117,7 +107,6 @@ end
 -- Rectanlge find
 function lookup:findRectangle(x1, y1, x2, y2)
 	if not children[self] then methodCallError("GMObjectBase:findRectangle", self) end
-	if object_locked[self] then objectLockError(self) end
 	if type(x1) ~= "number" then typeCheckError("GMObjectBase:findRectangle", 1, "x1", "number", x1) end
 	if type(y1) ~= "number" then typeCheckError("GMObjectBase:findRectangle", 2, "y1", "number", y1) end
 	if type(x2) ~= "number" then typeCheckError("GMObjectBase:findRectangle", 3, "x2", "number", x2) end
@@ -129,7 +118,6 @@ end
 
 function lookup:findAllRectangle(x1, y1, x2, y2)
 	if not children[self] then methodCallError("GMObjectBase:findAllRectangle", self) end
-	if object_locked[self] then objectLockError(self) end
 	if type(x1) ~= "number" then typeCheckError("GMObjectBase:findAllRectangle", 1, "x1", "number", x1) end
 	if type(y1) ~= "number" then typeCheckError("GMObjectBase:findAllRectangle", 2, "y1", "number", y1) end
 	if type(x2) ~= "number" then typeCheckError("GMObjectBase:findAllRectangle", 3, "x2", "number", x2) end
@@ -145,7 +133,6 @@ end
 
 function lookup:findEllipse(x1, y1, x2, y2)
 	if not children[self] then methodCallError("GMObjectBase:findEllipse", self) end
-	if object_locked[self] then objectLockError(self) end
 	if type(x1) ~= "number" then typeCheckError("GMObjectBase:findEllipse", 1, "x1", "number", x1) end
 	if type(y1) ~= "number" then typeCheckError("GMObjectBase:findEllipse", 2, "y1", "number", y1) end
 	if type(x2) ~= "number" then typeCheckError("GMObjectBase:findEllipse", 3, "x2", "number", x2) end
@@ -157,7 +144,6 @@ end
 
 function lookup:findAllEllipse(x1, y1, x2, y2)
 	if not children[self] then methodCallError("GMObjectBase:findAllEllipse", self) end
-	if object_locked[self] then objectLockError(self) end
 	if type(x1) ~= "number" then typeCheckError("GMObjectBase:findAllEllipse", 1, "x1", "number", x1) end
 	if type(y1) ~= "number" then typeCheckError("GMObjectBase:findAllEllipse", 2, "y1", "number", y1) end
 	if type(x2) ~= "number" then typeCheckError("GMObjectBase:findAllEllipse", 3, "x2", "number", x2) end
@@ -173,7 +159,6 @@ end
 
 function lookup:findLine(x1, y1, x2, y2)
 	if not children[self] then methodCallError("GMObjectBase:findLine", self) end
-	if object_locked[self] then objectLockError(self) end
 	if type(x1) ~= "number" then typeCheckError("GMObjectBase:findLine", 1, "x1", "number", x1) end
 	if type(y1) ~= "number" then typeCheckError("GMObjectBase:findLine", 2, "y1", "number", y1) end
 	if type(x2) ~= "number" then typeCheckError("GMObjectBase:findLine", 3, "x2", "number", x2) end
@@ -185,7 +170,6 @@ end
 
 function lookup:findAllLine(x1, y1, x2, y2)
 	if not children[self] then methodCallError("GMObjectBase:findAllLine", self) end
-	if object_locked[self] then objectLockError(self) end
 	if type(x1) ~= "number" then typeCheckError("GMObjectBase:findAllLine", 1, "x1", "number", x1) end
 	if type(y1) ~= "number" then typeCheckError("GMObjectBase:findAllLine", 2, "y1", "number", y1) end
 	if type(x2) ~= "number" then typeCheckError("GMObjectBase:findAllLine", 3, "x2", "number", x2) end
@@ -201,7 +185,6 @@ end
 
 function lookup:findPoint(x, y)
 	if not children[self] then methodCallError("GMObjectBase:findPoint", self) end
-	if object_locked[self] then objectLockError(self) end
 	if type(x) ~= "number" then typeCheckError("GMObjectBase:findPoint", 1, "x", "number", x) end
 	if type(y) ~= "number" then typeCheckError("GMObjectBase:findPoint", 2, "y", "number", y) end
 	
@@ -211,7 +194,6 @@ end
 
 function lookup:findAllPoint(x, y)
 	if not children[self] then methodCallError("GMObjectBase:findAllPoint", self) end
-	if object_locked[self] then objectLockError(self) end
 	if type(x) ~= "number" then typeCheckError("GMObjectBase:findAllPoint", 1, "x", "number", x) end
 	if type(y) ~= "number" then typeCheckError("GMObjectBase:findAllPoint", 2, "y", "number", y) end
 	

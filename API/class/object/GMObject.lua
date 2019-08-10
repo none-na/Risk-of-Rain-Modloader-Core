@@ -20,7 +20,7 @@ local object_name = {}
 local object_type = {}
 local id_to_object = {}
 local object_real_name = {}
-local object_locked = GMObject.locked
+local object_locked = {}
 
 -- Global tables
 GMObject.noSpawn = object_nospawn
