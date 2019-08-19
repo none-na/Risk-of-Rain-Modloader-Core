@@ -98,6 +98,8 @@ require "api/module/input"
 
 require "api/module/net"
 
+require "api/module/save"
+
 require "api/class/Item"
 
 require "api/class/Artifact"
@@ -141,8 +143,6 @@ function CallbackHandlers.updatePlayerList()
 	local success, err = pcall(updatePlayerList)
 	if err then log("updatePlayerList:", err) end
 end
-
-function CallbackHandlers.encodeModSave() end
 
 -- Call queued post-load functions
 for _, v in ipairs(CallWhenLoaded) do

@@ -45,7 +45,8 @@ ffi.cdef[[
 	double sound_isplaying(int sound);
 	double sound_play_ext(int sound, float pitch, float volume);
 	double sound_add(const char* fname);
-	const char* sound_get_name(int sound);
+	const char* sound_get_name(double sound);
+	double sound_get_id(double sound);
 	double sprite_add(const char* fname, double frames, double xorigin, double yorigin);
 	void sprite_assign(int to, int from);
 	const char* sprite_get_name(int sprite);
@@ -101,7 +102,8 @@ ffi.cdef[[
 	double instance_create(double x, double y, double object);
 	void instance_destroy(double instance, double event);
 	double instance_exists(double instance);
-	double get_object_index(long long instance);
+	double get_object_index(double instance);
+	double get_object_index_unsafe(double instance);
 	double object_is_ancestor(double child, double parent);
 	double read_alarm(double id, double alarm);
 	void write_alarm(double id, double alarm, double value);

@@ -434,6 +434,7 @@ do
 	end
 
 	local playerObj = nil
+	local oldHUD = nil
 	function public.updatePlayerList()
 		if playerObj == nil then
 			playerObj = Object.find("p", "vanilla")
@@ -453,12 +454,21 @@ do
 				rawset(v, k, p)
 			end
 		end
+
+		if oldHUD ~= GML_hud_instance_id then
+			oldHUD = GML_hud_instance_id
+			local hudInst = GMInstance.iwrap(GML_hud_instance_id)
+			for _, v in ipairs(miscTables) do
+				rawset(v, "hud", hudInst)
+				rawset(v, "HUD", hudInst)
+			end
+		end
 	end
 
 	function public.updateDirectorInstance()
-		local inst = GMInstance.iwrap(GML_director_instance_id)
+		local directorInst = GMInstance.iwrap(GML_director_instance_id)
 		for _, v in ipairs(miscTables) do
-			rawset(v, "director", inst)
+			rawset(v, "director", directorInst)
 		end
 	end
 end

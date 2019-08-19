@@ -15,11 +15,12 @@ local packet_handler = {}
 local function newPacket(fname, name, handler)
 	if type(name) ~= "string" then typeCheckError(fname, 1, "name", "string", name, 1) end
 	if type(handler) ~= "function" then typeCheckError(fname, 2, "handler", "function", handler, 1) end
-	verifyCallback(bind, 1)
+	verifyCallback(handler, 1)
 	local context = GetModContext()
 	contextVerify(all_packets, name, context, "Packet", 1)
 	local new = static.new(nid)
 	contextInsert(all_packets, name, context, new)
+	modFunctionSources[handler] = context
 	packet_origin[new] = context
 	packet_name[new] = name
 	packet_handler[new] = handler
@@ -96,7 +97,7 @@ function CallbackHandlers.HandleUserPacket(args)
 	local hargs = {sender}
 	-- ADD CODE TO CHECK FOR END OF PACKET
 	local count = GML.readint()
-	for i = 1, count do
+	for i = 2, count + 1 do
 		local t = typeIDs[GML.readbyte()]
 		hargs[i] = decoders[t]()
 	end

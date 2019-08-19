@@ -20,27 +20,38 @@ local object_name = {}
 local object_type = {}
 local id_to_object = {}
 local object_real_name = {}
-local object_locked = GMObject.locked
+local object_locked = {}
 
 -- Global tables
 GMObject.noSpawn = object_nospawn
 GMObject.noDestroy = object_nodestroy
 GMObject.ids = ids
 GMObject.ids_map = id_to_object
+GMObject.locked = object_locked
 
 GMInstance = {}
 local instance_object = setmetatable({}, {__mode = "k"})
 -- Helper functions
 local iwrap
+local object_id_custom = {}
 do
 	local wrapped = setmetatable({}, {__mode = "v"})
-	function iwrap(instance)
+	function iwrap(instance, unsafe)
 		if not instance then return end
 		if wrapped[instance] then
 			return wrapped[instance]
 		else
-			local nid = GML.get_object_index(instance)
-			if nid < 0 then 
+			local nid
+			if not unsafe then
+				nid = GML.get_object_index(instance)
+			else
+				-- Lua side implementation of the get_obejct_index script
+				nid = AnyTypeRet(GML.variable_instance_get(instance, "object_index"))
+				if object_id_custom[nid] then
+					nid = AnyTypeRet(GML.variable_instance_get(instance, "_object_index"))
+				end
+			end
+			if nid < 0 then
 				-- Doesn't exist
 				return
 			end
@@ -118,6 +129,11 @@ function lookup:getName()
 	return object_name[self]
 end
 
+lookup.id = {get = function(self)
+	return ids[self]
+end}
+lookup.ID = lookup.id
+
 
 -- Event binding
 do
@@ -149,6 +165,8 @@ do
 			objectEvents[id] = {}
 		end
 
+		modFunctionSources[bind] = GetModContext()
+
 		local t = objectEvents[id][event]
 		if not t then
 			t = {}
@@ -170,7 +188,7 @@ do
 			if objectEvents[obj][ev] then
 				-- Wrap instances
 				VerifiedInstances[id] = 2
-				id = iwrap(id)
+				id = iwrap(id, ev == 1)
 				if special then special = iwrap(special) end
 				-- Call events
 				local args = {id, special}
@@ -235,7 +253,7 @@ do
 	-- List of spawn disabled objects
 	-- These mostly just crash the game or do other weird stuff
 	local object_nospawn_list = {
-		"oP", "oBullet", "oExplosion", "oEfPlayerDead", "oSpawn", "oBodyCollector", "oBody",
+		"oP", "oBullet", "oExplosion", "oEfPlayerDead", "oBodyCollector", "oBody",
 		"oWormBody", "oWormHead", "oWurmBody", "oWurmHead", "oWurmController",
 		"oCommandFinal", "oJellyLegs",
 	}
@@ -247,7 +265,8 @@ do
 	-- List of locked objects
 	-- Objects that can be accessed by mods but you cant really do anything with them
 	local object_lock_list = {
-		"oDirectorControl"
+		"oDirectorControl",
+		"oHUD"
 	}
 
 	
@@ -260,7 +279,7 @@ do
 		"oHighscore", "oSelect", "oSelectCoop",
 		"oSelectMult", "oFairItemButton", "oCharPalette",
 		"oCredits", "oEfGameBeat", "oMenu",
-		"oHUD", "oAchievement", "oError",
+		"oAchievement", "oError",
 		-- Control objects
 		"objClient", "objServer", "oPrePlayer", "oInit", "oConsole",
 		"rousrDissonance", "oTransformInto", "oCustomRoomControl", "oCustomRoomLayer",
@@ -269,13 +288,6 @@ do
 		"pBoss", "pBlockMain", "pEnemyClassic", "pChest", "pPlayer", "pEnemy",
 		"pMapObjects", "pDroneItem", "pDrone", "pItem", "pArtifact", "pFriend",
 		"pBulletCollision", "pBossClassic", "pEnemyController",
-		-- Customobjects
-		"oCustomObject", "oCustomObject_pBoss", "oCustomObject_pNPC", "oCustomObject_pEnemyClassic",
-		"oCustomObject_pBossClassic", "oCustomObject_pFlying", "oCustomObject_pEnemy",
-		"oCustomObject_pFriend", "oCustomObject_pItem",
-		"oCustomObject_pDrone", "oCustomObject_pMapObjects", "oCustomObject_pChest",
-		"oCustomObject_pBlockMain", "oCustomObject_pBlockAdvancedCollision", "oCustomObject_pArtifact",
-		"oCustomObject_pArtifact8Box",
 		-- Cutscene stuff
 		"oShipCargoHead", "oShipCargo", "oBlackIn", "oCutsceneControl", "oBlackbars",
 		"oFadeToBlack", "oGiantPod", "oIntroControl", "oBoss1Fake",
@@ -296,12 +308,22 @@ do
 		"oJLMG", "oHeroHat", "oHeroGarb", "oHeroScarf", "oHeroShoe",
 		"oHunter", "oImpGFake", "oFlash",
 	}
+	
+	local objecct_custom_list = {
+		-- Customobjects
+		"oCustomObject", "oCustomObject_pBoss", "oCustomObject_pNPC", "oCustomObject_pEnemyClassic",
+		"oCustomObject_pBossClassic", "oCustomObject_pFlying", "oCustomObject_pEnemy",
+		"oCustomObject_pFriend", "oCustomObject_pItem",
+		"oCustomObject_pDrone", "oCustomObject_pMapObjects", "oCustomObject_pChest",
+		"oCustomObject_pBlockMain", "oCustomObject_pBlockAdvancedCollision", "oCustomObject_pArtifact",
+		"oCustomObject_pArtifact8Box",
+	}
 
 	local no_rename = {
 		["object415"] = true
 	}
 	
-	local object_to_lock, object_to_nospawn, object_to_nodestroy, object_to_hide = {}, {}, {}, {}
+	local object_to_lock, object_to_nospawn, object_to_nodestroy, object_to_hide, object_to_custom = {}, {}, {}, {}, {}
 	for _, v in ipairs(object_lock_list) do
 		object_to_lock[v] = true
 	end
@@ -314,6 +336,10 @@ do
 	end
 	for _, v in ipairs(object_hide_list) do
 		object_to_hide[v] = true
+	end
+	for _, v in ipairs(objecct_custom_list) do
+		object_to_hide[v] = true
+		object_to_custom[v] = true
 	end
 
 	local ttable = all_objects.vanilla
@@ -357,6 +383,9 @@ do
 			object_id_to_wrapper[t] = object_type_to_wrapper[object_type[new]]
 		else
 			object_id_hidden[t] = true
+			if object_to_custom[realName] then
+				object_id_custom[t] = true
+			end
 		end
 		t = t + 1
 	end
@@ -406,6 +435,11 @@ function Object.findInstance(id)
 			return iwrap(id)
 		end
 	end
+end
+
+function Object.fromID(id)
+	if type(id) ~= "number" then typeCheckError("Object.fromID", 1, "id", "number", id) end
+	return id_to_object[id]
 end
 
 require("api/deprecated/ObjectGroup")

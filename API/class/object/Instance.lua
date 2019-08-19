@@ -461,6 +461,10 @@ function GMInstance.collectGarbage()
 		end
 	end
 end
+-- Tend to avoid doing this sort of thing but it feels like the best option here
+GML.hook_set_active("onStep", 1)
+callback.register("onStep", GMInstance.collectGarbage)
+
 local function getDataInternal(instance, mod)
 	local id = ids[instance]
 	mod = string.lower(mod)
