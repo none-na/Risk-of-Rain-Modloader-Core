@@ -7,7 +7,7 @@ meta.__tostring = __tostring_default_namespace
 
 local all_enemies = {vanilla = {}}
 
-local obj_parent = {
+local obj_parent = 	{
     enemy = GML.asset_get_index("pEnemy"),
     boss = GML.asset_get_index("pBoss"),
     classicEnemy = GML.asset_get_index("pEnemyClassic"),
@@ -27,18 +27,22 @@ local enemyFields = {
     isBoss = 6,
     isClassic = 7,
     displayName = 8,
-    origin = 9
+	origin = 9,
+	unused_callbacks = 10,
+	eliteTypes = 11,
+	canBlighted = 12,
+	GMLEliteScript = 13
 }
 local logGlobalTable = "mons_info"
 local logFields = {
     visible = {
         displayName = 0,
-        logStory = 1,
-        logHP = 2,
-        logDamage = 3,
-        logSpeed = 4,
-        logSprite = 5,
-        logPortrait = 7
+        story = 1,
+        hp = 2,
+        damage = 3,
+        speed = 4,
+        sprite = 5,
+        portrait = 7
     },
     internal = {
         unlocked = 6,
@@ -86,38 +90,13 @@ do
 		return AnyTypeRet(GML.array_global_read_2(enemyGlobalTable, ids[self], enemyFields.realName))
 	end
 
-	-- Bind a function to an enemy callback
-	local events = {
-		spawn = 0,
-		step = 1,
-		draw = 2,
-        death = 3,
-        onSkill = 4
-	}
-	function lookup:addCallback(callback, bind)
-		if not children[self] then methodCallError("Enemy:addCallback", self) end
-		if type(callback) ~= "string" then typeCheckError("Enemy:addCallback", 1, "callback", "string", callback) end
-		if type(bind) ~= "function" then typeCheckError("Enemy:addCallback", 2, "bind", "function", bind) end
-		if not events[callback] then error(string.format("'%s' is not a valid enemy callback", callback), 2) end
-		verifyCallback(bind)
-		
-		modFunctionSources[bind] = GetModContext()
-		local current = enemy_callbacks[self][callback]
-		if current == nil then
-			current = {}
-			enemy_callbacks[self][callback] = current
-			GML.enemy_enable_callback(ids[self], events[callback])
-		end
-		table.insert(current, bind)
-	end
-
 	-- Set enemy log
 	function lookup:setLog(args)
 		if not children[self] then methodCallError("Enemy:setLog", self) end
 		if typeOf(args) ~= "table" then typeCheckError("Enemy:setLog", 1, "args", "named arguments", args) end
         
 		local iid = enemy_to_log_id[self]
-
+		
         if AnyTypeRet(GML.array_global_read_2(logGlobalTable, iid, logFields.internal.hasLog)) ~= 1 then
             GML.array_global_write_2(logGlobalTable, AnyTypeArg(1), iid, logFields.internal.hasLog)
             -- TODO: this should really just be on a gml script
@@ -130,12 +109,12 @@ do
 		for k, _ in pairs(args) do
 			if logFields.visible[k] then
 				local v = rawget(args, k)
-                if logFields.visible[k] == logFields.visible.logSprite or logFields.visible[k] == logFields.visible.logPortrait then
+                if k == "sprite" or k == "portrait" then
                     -- lets not let the player set sprites at nil; if they want it empty then don't set it
                     if typeOf(v) ~= "Sprite" then typeCheckError("Enemy:setLog", 1, "args."..tostring(k), "Sprite", v) end
                     GML.array_global_write_2(logGlobalTable, AnyTypeArg(SpriteUtil.toID(v)), iid, logFields.visible[k])
                 else
-                    if logFields.visible[k] == logFields.visible.logHP or logFields.visible[k] == logFields.visible.logDamage or logFields.visible[k] == logFields.visible.logSpeed then
+                    if k == "hp" or k == "damage" or k == "speed" then
                         if type(v) ~= "number" then typeCheckError("Enemy:setLog", 1, "args."..tostring(k), "number", v) end
                     else
                         if type(v) ~= "string" then typeCheckError("Enemy:setLog", 1, "args."..tostring(k), "string", v) end
@@ -170,28 +149,18 @@ do
 			GML.array_global_write_2(enemyGlobalTable, AnyTypeArg(v), ids[t], enemyFields.displayName)
 		end
 	}
-
+	
 	-- spawn type
 	lookup.spawnType = {
 		get = function(t)
             local st = AnyTypeRet(GML.array_global_read_2(enemyGlobalTable, ids[t], enemyFields.spawnType))
-            local result
-			if st == 0 then result = "inView"
-            elseif st == 1 then result = "bossSpawn"
-            elseif st == 2 then result = "atOrigin"
-            elseif st == 3 then result = "outOfView"
-            else result = "undefined" end
-            return result
+            return st
 		end,
 		set = function(t, v)
-			if type(v) ~= "string" then fieldTypeError("Enemy.spawnType", "string", v) end
-			local result
-			if v == "inView" then result = 0
-            elseif v == "bossSpawn" then result = 1
-            elseif v == "atOrigin" then result = 2
-            elseif v == "outOfView" then result = 3
-            else error("'"..v.."' is not a valid spawn type", 2) end
-            GML.array_global_write_2(enemyGlobalTable, AnyTypeArg(result), ids[t], enemyFields.spawnType)
+			if type(v) ~= "string" then fieldTypeError("Enemy.spawnType", "number", v) end
+			v = math.floor(v)
+			if v < 0 or v > 3 then error("'"..tostring(v).."' is not a valid spawn type", 2) end
+            GML.array_global_write_2(enemyGlobalTable, AnyTypeArg(v), ids[t], enemyFields.spawnType)
 		end
 	}
     
@@ -235,6 +204,17 @@ do
 		end
 	}
 
+	-- can be blighted?
+	lookup.blightable = {
+		get = function(t)
+			return AnyTypeRet(GML.array_global_read_2(enemyGlobalTable, ids[t], enemyFields.canBlighted)) == 1
+		end,
+		set = function(t, v)
+			if type(v) ~= "boolean" then fieldTypeError("Enemy.blightable", "boolean", v) end
+			GML.array_global_write_2(enemyGlobalTable, AnyTypeArg(v and 1 or 0), ids[t], enemyFields.canBlighted)
+		end
+	}
+
 	-- -- is boss
 	-- lookup.isBoss = {
 		-- get = function(t)
@@ -262,7 +242,7 @@ do
 		if not children[self] then methodCallError("Enemy:create", self) end
 		if type(x) ~= "number" then typeCheckError("Enemy:create", 1, "x", "number", x) end
 		if type(y) ~= "number" then typeCheckError("Enemy:create", 2, "y", "number", y) end
-		return iwrap(GML.instance_create(x, y, obj_toID(enemy_to_object[self])))
+		return enemy_to_object[self]:create(x, y)
 	end
 end
 ----------------------------
@@ -271,8 +251,13 @@ end
 
 Enemy = {}
 
+Enemy.SPAWN_CLASSIC = 0
+Enemy.SPAWN_BOSS = 1
+Enemy.SPAWN_ORIGIN = 2
+Enemy.SPAWN_VIEW = 3
+
 do
-	local function enemy_new(name, isClassic, isBoss)
+	--[[local function enemy_new(name, isClassic, isBoss)
 		local context = GetModContext()
 		contextVerify(all_enemies, name, context, "Enemy", 1)
 
@@ -319,16 +304,15 @@ do
 		GML.array_global_write_2(enemyGlobalTable, AnyTypeArg(isClassic and 1 or 0), nid, enemyFields.isClassic)
 		GML.array_global_write_2(enemyGlobalTable, AnyTypeArg(name), nid, enemyFields.displayName)
 		GML.array_global_write_2(enemyGlobalTable, AnyTypeArg(context), nid, enemyFields.origin)
-		enemy_callbacks[new] = {}
         
         -- Setup default log
         GML.array_global_write_2(logGlobalTable, AnyTypeArg(name), logNid, logFields.visible.displayName)
-        GML.array_global_write_2(logGlobalTable, AnyTypeArg(""), logNid, logFields.visible.logStory)
-        GML.array_global_write_2(logGlobalTable, AnyTypeArg(0), logNid, logFields.visible.logHP)
-        GML.array_global_write_2(logGlobalTable, AnyTypeArg(0), logNid, logFields.visible.logDamage)
-        GML.array_global_write_2(logGlobalTable, AnyTypeArg(0), logNid, logFields.visible.logSpeed)
-        GML.array_global_write_2(logGlobalTable, AnyTypeArg(-1), logNid, logFields.visible.logSprite)
-        GML.array_global_write_2(logGlobalTable, AnyTypeArg(-1), logNid, logFields.visible.logPortrait)
+        GML.array_global_write_2(logGlobalTable, AnyTypeArg(""), logNid, logFields.visible.story)
+        GML.array_global_write_2(logGlobalTable, AnyTypeArg(0), logNid, logFields.visible.hp)
+        GML.array_global_write_2(logGlobalTable, AnyTypeArg(0), logNid, logFields.visible.damage)
+        GML.array_global_write_2(logGlobalTable, AnyTypeArg(0), logNid, logFields.visible.speed)
+        GML.array_global_write_2(logGlobalTable, AnyTypeArg(-1), logNid, logFields.visible.sprite)
+        GML.array_global_write_2(logGlobalTable, AnyTypeArg(-1), logNid, logFields.visible.portrait)
         GML.array_global_write_2(logGlobalTable, AnyTypeArg(0), logNid, logFields.internal.unlocked)
         GML.array_global_write_2(logGlobalTable, AnyTypeArg(context), logNid, logFields.internal.origin)
         GML.array_global_write_2(logGlobalTable, AnyTypeArg(name), logNid, logFields.internal.realName)
@@ -351,14 +335,14 @@ do
 		if type(isBoss) ~= "boolean" then typeCheckError("Enemy.new", 3, "isBoss", "boolean", isBoss) end
 		return enemy_new(name, isClassic, isBoss)
 	end
-	Enemy.find = contextSearch(all_enemies, "Enemy.find")
-	Enemy.findAll = contextFindAll(all_enemies, "Enemy.findAll")
 	setmetatable(Enemy, {__call = function(t, name, isClassic, isBoss)
 		if type(name) ~= "string" then typeCheckError("Enemy", 1, "name", "string", name) end
 		if type(isClassic) ~= "boolean" then typeCheckError("Enemy", 2, "isClassic", "boolean", isClassic) end
 		if type(isBoss) ~= "boolean" then typeCheckError("Enemy", 3, "isBoss", "boolean", isBoss) end
 		return enemy_new(name, isClassic, isBoss)
-	end})
+	end})]]
+	Enemy.find = contextSearch(all_enemies, "Enemy.find")
+	Enemy.findAll = contextFindAll(all_enemies, "Enemy.findAll")
 end
 
 -- Find an enemy from its object
@@ -402,62 +386,8 @@ function Enemy.setInitialStats(enemyInstance, health, damage, exp_worth, armor)
 	GML.variable_instance_set(id, "armor", AnyTypeArg(tarmor))
 end
 
--- Set enemy sound effects
-
-function Enemy.setSounds(enemyInstance, soundTable)
-	if typeOf(enemyInstance) ~= "ActorInstance" then typeCheckError("Enemy.setSounds", 1, "enemyInstance", "ActorInstance", enemyInstance) end
-	if typeOf(soundTable) ~= "table" then typeCheckError("Enemy.setSounds", 2, "soundTable", "named arguments", soundTable) end
-    
-    local enemySounds = {
-        hit = 0,
-        death = 1
-    }
-    
-    for k, _ in pairs(soundTable) do
-        if enemySounds[k] then
-            local v = rawget(soundTable, k)
-            if typeOf(v) ~= "Sound" then typeCheckError("Enemy.setSounds", 2, "soundTable."..tostring(k), "Sound", v) end
-            if enemySounds[k] == 0 then -- hit
-                enemyInstance:set("sound_hit", SoundUtil.ids[v])
-            else -- death
-                enemyInstance:set("sound_death", SoundUtil.ids[v])
-            end
-        end
-    end
-end
-
--- Set enemy sprites
-
-function Enemy.setSprites(enemyInstance, spriteTable)
-	if typeOf(enemyInstance) ~= "ActorInstance" then typeCheckError("Enemy.setSprites", 1, "enemyInstance", "ActorInstance", enemyInstance) end
-	if typeOf(spriteTable) ~= "table" then typeCheckError("Enemy.setSprites", 2, "spriteTable", "named arguments", spriteTable) end
-    
-    local enemySprites = {
-        idle = 0,
-        walk = 1,
-        jump = 2,
-        death = 3
-    }
-    
-    for k, _ in pairs(spriteTable) do
-        if enemySprites[k] then
-            local v = rawget(spriteTable, k)
-            if typeOf(v) ~= "Sprite" then typeCheckError("Enemy.setSprites", 2, "spriteTable."..tostring(k), "Sprite", v) end
-            if enemySprites[k] == 0 then -- idle
-                enemyInstance:set("sprite_idle", SpriteUtil.toID(v))
-            elseif enemySprites[k] == 1 then -- walk
-                enemyInstance:set("sprite_walk", SpriteUtil.toID(v))
-            elseif enemySprites[k] == 2 then -- jump
-                enemyInstance:set("sprite_jump", SpriteUtil.toID(v))
-            else -- death
-                enemyInstance:set("sprite_death", SpriteUtil.toID(v))
-            end
-        end
-    end
-end
-
 -- use skill
-
+--[[
 function Enemy.useSkill(enemyInstance, index, sprite, speed, cooldown, resetHSpeed)
     if typeOf(enemyInstance) ~= "ActorInstance" then typeCheckError("Enemy.useSkill", 1, "enemyInstance", "ActorInstance", enemyInstance) end
     if type(index) ~= "number" then typeCheckError("Enemy.useSkill", 2, "index", "number", index) end
@@ -482,37 +412,32 @@ function Enemy.useSkill(enemyInstance, index, sprite, speed, cooldown, resetHSpe
         error(msg, 3)
     end
 end
+]]
 
 ----------------
 ----- Misc -----
 ----------------
 -- Wrap vanilla enemies
-for i = 0, enemy_number - 2 do -- unimplemented enemies are skipped (last two); this does create a hole in the ids but it shouldn't be a problem
-	local n = static.new(i)
-    enemy_callbacks[n] = {}
-    
-    local eObj = AnyTypeRet(GML.array_global_read_2(enemyGlobalTable, i, enemyFields.spawnObject))
+do
+	local obj_map = AnyTypeRet(GML.variable_global_get("mons_id_map"))
+	for i = 0, enemy_number - 2 do -- unimplemented enemies are skipped (last two); this does create a hole in the ids but it shouldn't be a problem
+		local n = static.new(i)
+		enemy_callbacks[n] = {}
+		
+		local eObj = AnyTypeRet(GML.array_global_read_2(enemyGlobalTable, i, enemyFields.spawnObject))
 
-    object_to_enemy[obj_fromID(eObj)] = n
-    enemy_to_object[n] = obj_fromID(eObj)
-    id_to_enemy[i] = n
-    enemy_to_log_id[n] = AnyTypeRet(GML.ds_map_find_value(GML.variable_global_get("mons_id_map"), AnyTypeArg(eObj)))
-    
-    all_enemies.vanilla[string.lower(AnyTypeRet(GML.array_global_read_2(enemyGlobalTable, i, enemyFields.realName)))] = n
+		object_to_enemy[obj_fromID(eObj)] = n
+		enemy_to_object[n] = obj_fromID(eObj)
+		id_to_enemy[i] = n
+		enemy_to_log_id[n] = AnyTypeRet(GML.ds_map_find_value(obj_map, AnyTypeArg(eObj)))
+		
+		all_enemies.vanilla[string.lower(AnyTypeRet(GML.array_global_read_2(enemyGlobalTable, i, enemyFields.realName)))] = n
+	end
 end
 
 -- Handle callback
 function SpecialCallbacks.enemy(callback, enemy, actor)
-	enemy = object_to_enemy[obj_fromID(enemy)]
-	local call = enemy_callbacks[enemy][callback]
-	if not call then
-		return
-	else
-		local args = {iwrap(actor)}
-		for _, v in ipairs(call) do
-			CallModdedFunction(v, args)
-		end
-	end
+	-- TODO: remove this after removing gml references to it
 end
 
 -- API internals table

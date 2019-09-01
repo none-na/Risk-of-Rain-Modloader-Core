@@ -112,7 +112,7 @@ require "api/class/Buff"
 
 require "api/class/Achievement"
 
-require "api/class/Enemy"
+require "api/class/actor/Enemy"
 
 require "api/module/misc"
 
