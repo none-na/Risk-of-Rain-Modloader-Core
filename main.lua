@@ -106,6 +106,8 @@ require "api/class/Artifact"
 
 require "api/class/Interactable"
 
+require "api/class/Difficulty"
+
 require "api/class/Survivor"
 
 require "api/class/Stage"
