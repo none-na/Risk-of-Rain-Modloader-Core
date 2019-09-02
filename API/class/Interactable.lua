@@ -57,7 +57,7 @@ end
 do
 	local function new_interactable(fname, obj, name)
 		if typeOf(obj) ~= "GMObject" then typeCheckError(fname, 1, "obj", "GMObject", obj) end
-		if name ~= nil and type(name) ~= "string" then typeCheckError(fname, 2, "name", "string", name) end
+		if name ~= nil and type(name) ~= "string" then typeCheckError(fname, 2, "name", "string or nil", name) end
 		if name == nil then name = "Interactable" .. obj:getName() end
 		local context = GetModContext()
 
