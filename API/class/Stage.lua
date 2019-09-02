@@ -70,8 +70,17 @@ lookup.disabled = {
 	end,
 	set = function(t, v)
 		if type(v) ~= "boolean" then fieldTypeError("Stage.disabled", "boolean", v) end
-		stage_subname[t] = v
 		GML.ds_map_replace(ids[t], AnyTypeArg("locked"), AnyTypeArg(v and 1 or 0))
+	end
+}
+
+lookup.music = {
+	get = function(t)
+		return Sound.fromID(AnyTypeRet(GML.ds_map_find_value(ids[t], AnyTypeArg("music"))))
+	end,
+	set = function(t, v)
+		if typeOf(v) ~= "Sound" then fieldTypeError("Stage.music", "Sound", v) end
+		GML.ds_map_replace(ids[t], AnyTypeArg("music"), AnyTypeArg(v.ID))
 	end
 }
 
