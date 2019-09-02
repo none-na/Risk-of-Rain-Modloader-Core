@@ -178,7 +178,7 @@ function Difficulty.getScaling(kind)
 	local mul = GML.get_stats_multiplier(typ)
 
 	if kind == "cost" then
-		mul = mul * 2
+		mul = mul * 2 - 1
 	end
 
 	return mul
