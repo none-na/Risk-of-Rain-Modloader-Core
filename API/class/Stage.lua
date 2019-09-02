@@ -15,6 +15,9 @@ local stage_name = {}
 local stage_origin = {}
 local stage_displayname = {}
 local stage_subname = {}
+local stage_list_interactable = {}
+local stage_list_interactable_rarity = {}
+local stage_list_enemy = {}
 
 local id_to_stage = {}
 
@@ -73,6 +76,68 @@ lookup.disabled = {
 }
 
 ------------------------------------------
+-- INTERACTABLES -------------------------
+------------------------------------------
+
+function lookup:addInteractable(interactable)
+	if not children[self] then methodCallError("Stage:addInteractable", self) end
+	if typeOf(interactable) ~= "Interactable" then typeCheckError("Stage:addInteractable", 1, "interactable", "Interactable", interactable) end
+	local list = stage_list_interactable[self]
+	local iid = RoRInteractable.ids[interactable]
+	if GML.ds_list_find_index(list, AnyTypeArg(iid)) < 0 then
+		GML.ds_list_add(list, AnyTypeArg(iid))
+		GML.ds_list_add(stage_list_interactable_rarity[self], AnyTypeArg(1))
+	end
+end
+
+function lookup:removeInteractable(interactable)
+	if not children[self] then methodCallError("Stage:removeInteractable", self) end
+	if typeOf(interactable) ~= "Interactable" then typeCheckError("Stage:removeInteractable", 1, "interactable", "Interactable", interactable) end
+	local list = stage_list_interactable[self]
+	local iid = RoRInteractable.ids[interactable]
+	local index = GML.ds_list_find_index(list, AnyTypeArg(iid))
+	if index >= 0 then
+		GML.ds_list_delete(list, index)
+		GML.ds_list_delete(stage_list_interactable_rarity[self], index)
+	end
+end
+
+function lookup:listInteractables()
+	if not children[self] then methodCallError("Stage:listInteractables", self) end
+	local r = {}
+	local list = stage_list_interactable[self]
+	for i = 0, GML.ds_list_size(list) - 1 do
+		r[i + 1] = RoRInteractable.fromID[AnyTypeRet(GML.ds_list_find_value(list, i))]
+	end
+	return r
+end
+
+function lookup:getInteractableRarity(interactable)
+	if not children[self] then methodCallError("Stage:getInteractableRarity", self) end
+	if typeOf(interactable) ~= "Interactable" then typeCheckError("Stage:getInteractableRarity", 1, "interactable", "Interactable", interactable) end
+	local list = stage_list_interactable[self]
+	local iid = RoRInteractable.ids[interactable]
+	local index = GML.ds_list_find_index(list, AnyTypeArg(iid))
+	if index >= 0 then
+		return AnyTypeRet(GML.ds_list_find_value(stage_list_interactable_rarity[self], index))
+	else
+		return 1
+	end
+end
+
+function lookup:setInteractableRarity(interactable, rarity)
+	if not children[self] then methodCallError("Stage:setInteractableRarity", self) end
+	if typeOf(interactable) ~= "Interactable" then typeCheckError("Stage:setInteractableRarity", 1, "interactable", "Interactable", interactable) end
+	if type(rarity) ~= "number" then typeCheckError("Stage:setInteractableRarity", 2, "rarity", "number", rarity) end
+	local list = stage_list_interactable[self]
+	local iid = RoRInteractable.ids[interactable]
+	local index = GML.ds_list_find_index(list, AnyTypeArg(iid))
+	if index >= 0 then
+		GML.ds_list_replace(stage_list_interactable_rarity[self], index, AnyTypeArg(rarity))
+	end
+end
+
+------------------------------------------
 -- WRAP VANILLA STAGES -------------------
 ------------------------------------------
 
@@ -92,6 +157,9 @@ do
 		local new = static.new(v)
 		stage_name[new] = AnyTypeRet(GML.ds_map_find_value(v, AnyTypeArg("name")))
 		stage_subname[new] = AnyTypeRet(GML.ds_map_find_value(v, AnyTypeArg("subname")))
+		stage_list_interactable[new] = AnyTypeRet(GML.ds_map_find_value(v, AnyTypeArg("chests")))
+		stage_list_interactable_rarity[new] = AnyTypeRet(GML.ds_map_find_value(v, AnyTypeArg("rarity")))
+		stage_list_enemy[new] = AnyTypeRet(GML.ds_map_find_value(v, AnyTypeArg("enemies")))
 		stage_origin[new] = "Vanilla"
 		id_to_stage[v] = new
 		all_stages.vanilla[stage_name[new]:lower()] = new
