@@ -214,8 +214,7 @@ object_type_to_wrapper = {
 	mapObject = GMInstance.Instance.new,
 	damager = GMInstance.DamagerInstance.new,
 	actor = GMInstance.ActorInstance.new,
-	player = GMInstance.PlayerInstance.new,
-    enemy = GMInstance.ActorInstance.new
+	player = GMInstance.PlayerInstance.new
 }
 
 -- Wrap basegame objects
@@ -427,6 +426,66 @@ setmetatable(Object, {__call = function(t, name)
 	if name ~= nil and type(name) ~= "string" then typeCheckError("Object", 1, "name", "string or nil", name) end
 	return object_new(name)
 end})
+
+local object_base_types = {
+	generic = {},
+	enemyclassic = {
+		parent = GML.asset_get_index("pEnemyClassic"),
+		type = "actor"
+	},
+	enemy = {
+		parent = GML.asset_get_index("pEnemy"),
+		type = "actor"
+	},
+	bossclassic = {
+		parent = GML.asset_get_index("pBossClassic"),
+		type = "actor"
+	},
+	boss = {
+		parent = GML.asset_get_index("pBoss"),
+		type = "actor"
+	},
+	npc = {
+		parent = GML.asset_get_index("pNPC"),
+		type = "actor"
+	},
+	drone = {
+		parent = GML.asset_get_index("pDrone"),
+		type = "actor"
+	},
+	mapobject = {
+		parent = GML.asset_get_index("pMapObjects"),
+		type = "mapObject"
+	},
+	chest = {
+		parent = GML.asset_get_index("pChest"),
+		type = "mapObject"
+	},
+	droneitem = {
+		parent = GML.asset_get_index("pDroneItem"),
+		type = "mapObject"
+	}
+}
+
+function Object.base(kind, name)
+	if type(kind) ~= "string" then typeCheckError("Object.base", 1, "kind", "string or nil", kind) end
+	if name ~= nil and type(name) ~= "string" then typeCheckError("Object.base", 2, "name", "string or nil", name) end
+	kind = kind:lower()
+	if not object_base_types[kind] then error("'" .. kind .. "' is not a valid object base type.", 2) end
+	
+	local obj = object_new(name)
+
+	local info = object_base_types[kind]
+
+	if info.type then
+		GMObject.setObjectType(obj, info.type)
+	end
+	if info.parent then
+		GML.object_set_parent(obj.ID, info.parent)
+	end
+
+	return obj
+end
 
 function Object.findInstance(id)
 	if type(id) ~= "number" then typeCheckError("Object.findInstance", 1, "id", "number", id) end
