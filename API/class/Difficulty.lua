@@ -152,7 +152,6 @@ end
 for i = 1, diff_id_max do
 	local n = static.new(i)
 	local name = AnyTypeRet(GML.array_global_read_2("diff_info", i, 0))
-	print(i)
 	diff_origin[n] = "Vanilla"
 	diff_name[n] = name
 	all_diff.vanilla[name:lower()] = n
