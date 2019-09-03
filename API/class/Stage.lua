@@ -147,6 +147,41 @@ function lookup:setInteractableRarity(interactable, rarity)
 end
 
 ------------------------------------------
+-- ENEMIES -------------------------------
+------------------------------------------
+
+function lookup:addEnemy(enemy)
+	if not children[self] then methodCallError("Stage:addEnemy", self) end
+	if typeOf(enemy) ~= "Enemy" then typeCheckError("Stage:addEnemy", 1, "enemy", "Enemy", enemy) end
+	local list = stage_list_enemy[self]
+	local iid = RoREnemy.toID(enemy)
+	if GML.ds_list_find_index(list, AnyTypeArg(iid)) < 0 then
+		GML.ds_list_add(list, AnyTypeArg(iid))
+	end
+end
+
+function lookup:removeEnemy(enemy)
+	if not children[self] then methodCallError("Stage:removeEnemy", self) end
+	if typeOf(enemy) ~= "Enemy" then typeCheckError("Stage:removeEnemy", 1, "enemy", "Enemy", enemy) end
+	local list = stage_list_enemy[self]
+	local iid = RoREnemy.toID(enemy)
+	local index = GML.ds_list_find_index(list, AnyTypeArg(iid))
+	if index >= 0 then
+		GML.ds_list_delete(list, index)
+	end
+end
+
+function lookup:listEnemies()
+	if not children[self] then methodCallError("Stage:listEnemies", self) end
+	local r = {}
+	local list = stage_list_enemy[self]
+	for i = 0, GML.ds_list_size(list) - 1 do
+		r[i + 1] = RoREnemy.fromID(AnyTypeRet(GML.ds_list_find_value(list, i)))
+	end
+	return r
+end
+
+------------------------------------------
 -- WRAP VANILLA STAGES -------------------
 ------------------------------------------
 
