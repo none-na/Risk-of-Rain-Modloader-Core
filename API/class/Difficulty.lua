@@ -138,6 +138,8 @@ do
 
 		contextInsert(all_diff, name, context, n)
 
+		diff_from_id[diff_id_max] = n
+
 		return n
 	end
 
@@ -152,6 +154,7 @@ end
 for i = 1, diff_id_max do
 	local n = static.new(i)
 	local name = AnyTypeRet(GML.array_global_read_2("diff_info", i, 0))
+	diff_from_id[i] = n
 	diff_origin[n] = "Vanilla"
 	diff_name[n] = name
 	all_diff.vanilla[name:lower()] = n
