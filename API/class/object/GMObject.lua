@@ -316,7 +316,7 @@ do
 		"oCustomObject_pFriend", "oCustomObject_pItem",
 		"oCustomObject_pDrone", "oCustomObject_pMapObjects", "oCustomObject_pChest",
 		"oCustomObject_pBlockMain", "oCustomObject_pBlockAdvancedCollision", "oCustomObject_pArtifact",
-		"oCustomObject_pArtifact8Box",
+		"oCustomObject_pArtifact8Box", "oCustomObject_pDroneItem"
 	}
 
 	local no_rename = {
