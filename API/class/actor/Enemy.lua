@@ -7,13 +7,6 @@ meta.__tostring = __tostring_default_namespace
 
 local all_enemies = {vanilla = {}}
 
-local obj_parent = 	{
-    enemy = GML.asset_get_index("pEnemy"),
-    boss = GML.asset_get_index("pBoss"),
-    classicEnemy = GML.asset_get_index("pEnemyClassic"),
-    classicBoss = GML.asset_get_index("pBossClassic")
-}
-
 -- Definition tables
 local enemy_callbacks = {}
 local enemyGlobalTable = "enemy_info"
@@ -53,7 +46,7 @@ local logFields = {
     }
 }
 local enemy_number = 46 -- a total of 47 vanilla enemies
-local log_number = 40 -- a total of 41 vanilla logs
+local log_number = 46
 local log_number_unlockable = 31 -- a total of 31 logs that can be unlocked
 
 local iwrap = GMInstance.iwrap
@@ -165,13 +158,12 @@ do
 	}
     
 	-- points cost
-	lookup.pointsCost = {
+	lookup.spawnCost = {
 		get = function(t)
 			return AnyTypeRet(GML.array_global_read_2(enemyGlobalTable, ids[t], enemyFields.pointsCost))
 		end,
 		set = function(t, v)
-			if type(v) ~= "number" then fieldTypeError("Enemy.pointsCost", "numver", v) end
-            if v < 0 then error("points cost has to be greater than zero", 2) end
+			if type(v) ~= "number" then fieldTypeError("Enemy.spawnCost", "numver", v) end
 			GML.array_global_write_2(enemyGlobalTable, AnyTypeArg(v), ids[t], enemyFields.pointsCost)
 		end
 	}
@@ -215,28 +207,6 @@ do
 		end
 	}
 
-	-- -- is boss
-	-- lookup.isBoss = {
-		-- get = function(t)
-			-- return AnyTypeRet(GML.array_global_read_2(enemyGlobalTable, ids[t], enemyFields.isBoss)) == 1
-		-- end,
-		-- set = function(t, v)
-			-- if type(v) ~= "boolean" then fieldTypeError("Enemy.isBoss", "boolean", v) end
-			-- GML.array_global_write_2(enemyGlobalTable, AnyTypeArg(v and 1 or 0), ids[t], enemyFields.isBoss)
-		-- end
-	-- }
-    
-	-- -- is classic
-	-- lookup.isClassic = {
-		-- get = function(t)
-			-- return AnyTypeRet(GML.array_global_read_2(enemyGlobalTable, ids[t], enemyFields.isClassic)) == 1
-		-- end,
-		-- set = function(t, v)
-			-- if type(v) ~= "boolean" then fieldTypeError("Enemy.isClassic", "boolean", v) end
-			-- GML.array_global_write_2(enemyGlobalTable, AnyTypeArg(v and 1 or 0), ids[t], enemyFields.isClassic)
-		-- end
-	-- }
-    
 	-- Shortcut to enemy:getObject():create()
 	function lookup:create(x, y)
 		if not children[self] then methodCallError("Enemy:create", self) end
@@ -257,7 +227,7 @@ Enemy.SPAWN_ORIGIN = 2
 Enemy.SPAWN_VIEW = 3
 
 do
-	--[[local function enemy_new(name, isClassic, isBoss)
+	local function enemy_new(obj, name)
 		local context = GetModContext()
 		contextVerify(all_enemies, name, context, "Enemy", 1)
 
@@ -267,27 +237,6 @@ do
         local logNid = log_number
 		GML.variable_global_set("mons_number", AnyTypeArg(logNid))
 
-		-- Create new GMObject
-		overrideModContext = "modLoaderCore"
-		local newObj = Object.new(context.."_enemy_"..name)
-		GMObject.setObjectType(newObj, "enemy")
-		overrideModContext = nil
-		local noid = obj_toID(newObj)
-        
-        local common_parent = obj_parent.enemy
-        if isClassic then
-            if isBoss then
-                common_parent = obj_parent.classicBoss
-            else
-                common_parent = obj_parent.classicEnemy
-            end
-        else
-            if isBoss then
-                common_parent = obj_parent.boss
-            end
-        end
-		GML.object_set_parent(noid, common_parent)
-		GML.object_set_depth(noid, -99)
 		-- Create new enemy
 		local new = static.new(nid)
 		-- Add to mod enemy table
@@ -298,7 +247,7 @@ do
 		GML.array_global_write_2(enemyGlobalTable, AnyTypeArg(-1), nid, enemyFields.spawnType)
 		GML.array_global_write_2(enemyGlobalTable, AnyTypeArg(0), nid, enemyFields.pointsCost)
 		GML.array_global_write_2(enemyGlobalTable, AnyTypeArg(-1), nid, enemyFields.spawnSprite)
-		GML.array_global_write_2(enemyGlobalTable, AnyTypeArg(noid), nid, enemyFields.spawnObject)
+		GML.array_global_write_2(enemyGlobalTable, AnyTypeArg(obj.ID), nid, enemyFields.spawnObject)
 		GML.array_global_write_2(enemyGlobalTable, AnyTypeArg(-1), nid, enemyFields.spawnSound)
 		GML.array_global_write_2(enemyGlobalTable, AnyTypeArg(isBoss and 1 or 0), nid, enemyFields.isBoss)
 		GML.array_global_write_2(enemyGlobalTable, AnyTypeArg(isClassic and 1 or 0), nid, enemyFields.isClassic)
@@ -322,25 +271,23 @@ do
 		-- GML side function which automatically initializes all enemy info and loads from the save
 		GML.init_enemy(nid, logNid)
         
-        object_to_enemy[newObj] = new
-        enemy_to_object[new] = newObj
+        object_to_enemy[obj] = new
+        enemy_to_object[new] = obj
         id_to_enemy[nid] = new
         enemy_to_log_id[new] = logNid
 		return new
 	end
 	-- New enemy
-	function Enemy.new(name, isClassic, isBoss)
-		if type(name) ~= "string" then typeCheckError("Enemy.new", 1, "name", "string", name) end
-		if type(isClassic) ~= "boolean" then typeCheckError("Enemy.new", 2, "isClassic", "boolean", isClassic) end
-		if type(isBoss) ~= "boolean" then typeCheckError("Enemy.new", 3, "isBoss", "boolean", isBoss) end
-		return enemy_new(name, isClassic, isBoss)
+	function Enemy.new(obj, name)
+		if typeOf(obj) ~= "GMObject" then typeCheckError("Enemy.new", 1, "obj", "GMObject", obj) end
+		if type(name) ~= "string" then typeCheckError("Enemy.new", 2, "name", "string", name) end
+		return enemy_new(obj, name)
 	end
-	setmetatable(Enemy, {__call = function(t, name, isClassic, isBoss)
-		if type(name) ~= "string" then typeCheckError("Enemy", 1, "name", "string", name) end
-		if type(isClassic) ~= "boolean" then typeCheckError("Enemy", 2, "isClassic", "boolean", isClassic) end
-		if type(isBoss) ~= "boolean" then typeCheckError("Enemy", 3, "isBoss", "boolean", isBoss) end
-		return enemy_new(name, isClassic, isBoss)
-	end})]]
+	setmetatable(Enemy, {__call = function(t, obj, name)
+		if typeOf(obj) ~= "GMObject" then typeCheckError("Enemy", 1, "obj", "GMObject", obj) end
+		if type(name) ~= "string" then typeCheckError("Enemy", 2, "name", "string", name) end
+		return enemy_new(obj, name)
+	end})
 	Enemy.find = contextSearch(all_enemies, "Enemy.find")
 	Enemy.findAll = contextFindAll(all_enemies, "Enemy.findAll")
 end
