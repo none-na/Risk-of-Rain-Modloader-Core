@@ -57,7 +57,7 @@ do
 			end
 			local wrapper = object_id_to_wrapper[nid]
 			if wrapper == nil then
-				error("Attempting to wrap instance of unwrappable object '" .. ffi.string(GML.object_get_name(nid)) .. "', please report this as this is as modloader flaw.")
+				error("Attempting to wrap instance of unwrappable object '" .. ffi.string(GML.object_get_name(nid)) .. "'")
 			end
 			local new = wrapper(instance)
 			wrapped[instance] = new
