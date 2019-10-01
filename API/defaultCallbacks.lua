@@ -89,7 +89,8 @@ AddCallback("onMapObjectActivate", {
 
 --  Game
 AddCallback("onStageEntry")
-AddCallback("onMinuteChange")
+AddCallback("onSecond", {callTypes = {"number", "number"}}) -- Minute, second
+AddCallback("onMinute", {callTypes = {"number", "number"}}) -- Minute, second
 AddCallback("onGameStart")
 AddCallback("onGameEnd")
 
