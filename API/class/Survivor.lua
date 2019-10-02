@@ -219,7 +219,8 @@ lookup.endingQuote = {
 --------------------
 --------------------
 do
-	local defaultMenuSprite = SpriteUtil.fromID(GML.asset_get_index("sSelectAnon"))
+	local vanillaPlayedMap = AnyTypeRet(GML.variable_global_get("__games_played_map"))
+	local defaultMenuSprite = SpriteUtil.fromID(GML.asset_get_index("sSelectCharGMan"))
 	local function survivor_new(name)
 		local context = GetModContext()
 		contextVerify(all_survivors, name, context, "Survivor", 1)
@@ -241,6 +242,10 @@ do
 		survivor_callbacks_map[new] = AnyTypeRet(GML.array_read_2(nid, 17))
 		survivor_callbacks[new] = {}
 		GML.array_close()
+
+		if vanillaPlayedMap ~= nil then
+			GML.array_global_write_1("record_char", AnyTypeArg(AnyTypeRet(GML.ds_map_find_value(vanillaPlayedMap, AnyTypeArg(context .. "-" .. name)))), nid - 1)
+		end
 
 		contextInsert(all_survivors, name, context, new)
 
