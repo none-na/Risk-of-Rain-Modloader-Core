@@ -281,7 +281,7 @@ do
 		"oCredits", "oEfGameBeat", "oMenu",
 		"oAchievement", "oError",
 		-- Control objects
-		"objClient", "objServer", "oPrePlayer", "oInit", "oConsole",
+		"objClient", "objServer", "oPrePlayer", "oInit", "oConsole", "oLoadControl",
 		"rousrDissonance", "oTransformInto", "oCustomRoomControl", "oCustomRoomLayer",
 		-- Parents
 		"pArtifact8Box", "pBlock", "pNPC", "pRope", "pFlying",
