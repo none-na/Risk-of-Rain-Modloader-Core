@@ -13,8 +13,24 @@ function table.pack(...) return {n = select("#", ...), ...} end
 overrideModContext = nil
 currentModContext = "ModLoaderCore"
 modFunctionSources = setmetatable({}, {__type = "k"})
-function GetModContext()
-	return overrideModContext or currentModContext
+
+do
+	local g = _G
+	local function getModEnv()
+		local level = 3
+		repeat
+			local success, res = pcall(getfenv, level)
+			if not success then
+				return g
+			elseif res ~= g then
+				return res
+			end
+			level = level + 1
+		until false
+	end
+	function GetModContext()
+		return overrideModContext or mods.envToName[(getModEnv() or 1)] or currentModContext
+	end
 end
 
 function ResolveModPath()

@@ -47,6 +47,7 @@ local mod_signature_base = 32
 local mod_signature_upper = 32
 local mod_singature_end = 126
 local signature_to_mod = {}
+local env_to_name = {}
 
 local playerLists = {}
 local miscTables = {}
@@ -366,6 +367,8 @@ local function loadFromFile(s, dat, nocopy)
 	table.insert(netTables, newenv.net)
 	table.insert(playerLists, newenv.misc.players)
 	
+	env_to_name[newenv] = dat.internalname
+
 	dat.env = newenv
 	setfenv(func, newenv)
 	dat.func = func
@@ -483,5 +486,6 @@ public.aliases = aliases
 public.mods = mods
 public.modlist = modlist
 public.netAPIList = netTables
+public.envToName = env_to_name
 
 return public
