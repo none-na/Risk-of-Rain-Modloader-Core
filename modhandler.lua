@@ -37,7 +37,7 @@ local modenv = {
 }
 local aliases = {}
 
-local ALLOW_C_MODULES = false
+local ALLOW_C_MODULES = true
 
 local mods = {}
 local modlist = {}
@@ -197,9 +197,13 @@ modenv.require = function(s)
 	if ALLOW_C_MODULES and t.cpath then
 		local c_path = package.searchpath(s, t.cpath)
 		if c_path then
-			local func, err = package.loadlib(c_path, s)
+			if string.find(s, "%.%.") then
+				error("'..' not allowed in c pacakge path", 2)
+			end
+			
+			local func, err = package.loadlib(c_path, "luaopen_" .. s:gsub("%.", "_"))
 
-			if not func then error(err) end
+			if not func then error(err, 2) end
 
 			local ret = {func()}
 
