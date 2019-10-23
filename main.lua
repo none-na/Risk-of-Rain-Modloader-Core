@@ -108,6 +108,10 @@ require "api/class/object/GMObjectBase"
 
 require "api/class/Sound"
 
+--require "api/class/Camera"
+
+require "io"
+
 require "api/class/ParticleType"
 
 require "api/module/input"
@@ -139,9 +143,6 @@ require "api/module/misc"
 require "api/defaultCallbacks"
 
 require "api/modConstants"
-
-
-require "io"
 
 mods.modenv.print = print
 mods.modenv.log = log
