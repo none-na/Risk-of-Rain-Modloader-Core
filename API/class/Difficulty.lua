@@ -190,4 +190,9 @@ function Difficulty.getActive()
 	return diff_from_id[AnyTypeRet(GML.variable_global_get("diff_level"))]
 end
 
+function Difficulty.setActive(diff)
+	if typeOf(diff) ~= "Difficulty" then typeCheckError("Difficulty.setActive", 1, "diff", "Difficulty", diff) end
+	return GML.variable_global_set("diff_level", AnyTypeArg(ids[diff]))
+end
+
 mods.modenv.Difficulty = Difficulty
