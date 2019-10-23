@@ -140,6 +140,9 @@ require "api/defaultCallbacks"
 
 require "api/modConstants"
 
+
+require "io"
+
 mods.modenv.print = print
 mods.modenv.log = log
 
