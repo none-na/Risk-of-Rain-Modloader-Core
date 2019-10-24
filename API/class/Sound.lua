@@ -10,6 +10,8 @@ all_sounds = {vanilla = {}}
 sound_origin = {}
 id_to_sound = {}
 sound_name = {}
+sound_remapped = {}
+sound_basegame_id = {}
 
 -----------------------------------------
 -- Class methods ------------------------
@@ -34,6 +36,20 @@ end
 function lookup:loop()
 	if not children[self] then methodCallError("Sound:loop", self) end
 	GML.sound_loop(ids[self])
+end
+
+function lookup:setRemap(remap)
+	if not children[self] then methodCallError("Sound:setRemap", self) end
+	if remap ~= nil and typeOf(remap) ~= "Sound" then typeCheckError("Sound:setRemap", 1, "remap", "sound or nil", remap) end
+	if not sound_basegame_id[self] then error("only basegame sounds may be remapped", 2) end
+	local id = ids[remap or self]
+	GML.array_global_write_1("____sound_ids____", AnyTypeArg(id), sound_basegame_id[self])
+	sound_remapped[self] = remap
+end
+
+function lookup:getRemap(remap)
+	if not children[self] then methodCallError("Sound:getRemap", self) end
+	return sound_remapped[self]
 end
 
 function lookup:getOrigin()
@@ -78,7 +94,7 @@ function load_sound(funcName, name, fname)
 	end
 	
 	if s < 0 then
-		return error(string.format('unable to load sound %q, the file could not be found or is corrupted', fname))
+		return error(string.format('unable to load sound %q, the file could not be found or is corrupted', fname), 3)
 	else
 		local new = static.new(s)
 		registerNetID("sound", s, context, name)
@@ -139,6 +155,7 @@ do
 			sound_name[new] = name
 			sound_origin[new] = "vanilla"
 			id_to_sound[trueID] = new
+			sound_basegame_id[new] = t
 
 			t = t + 1
 		end
