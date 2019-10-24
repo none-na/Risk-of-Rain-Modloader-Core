@@ -94,6 +94,8 @@ do
 	end
 end
 
+require "api/class/List"
+
 require "internal/callbackHandler"
 
 require "api/standardExpanded"
