@@ -114,7 +114,7 @@ do
 	local default_icon = GML.asset_get_index("sDifficultyRainstorm")
 
 	local function new_diff(fname, name)
-		if type(name) ~= "string" then typeCheckError(fname, 1, "name", "string", name) end
+		if type(name) ~= "string" then typeCheckError(fname, 1, "name", "string", name, 1) end
 		local context = GetModContext()
 
 		contextVerify(all_diff, name, context, "Difficulty", 1)
@@ -143,11 +143,11 @@ do
 		return n
 	end
 
-	function Difficulty.new(obj, name)
-		return new_diff("Difficulty.new", obj, name)
+	function Difficulty.new(name)
+		return new_diff("Difficulty.new", name)
 	end
-	setmetatable(Difficulty, {__call = function(t, obj, name)
-		return new_diff("Difficulty", obj, name)
+	setmetatable(Difficulty, {__call = function(t, name)
+		return new_diff("Difficulty", name)
 	end})
 end
 

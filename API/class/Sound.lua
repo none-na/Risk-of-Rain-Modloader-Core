@@ -74,16 +74,16 @@ Sound.find = contextSearch(all_sounds, "Sound.find")
 Sound.findAll = contextFindAll(all_sounds, "Sound.findAll")
 
 function load_sound(funcName, name, fname)
-	if type(name) ~= "string" then typeCheckError(funcName, 1, fname == nil and "fname" or "name", "string", name) end
+	if type(name) ~= "string" then typeCheckError(funcName, 1, fname == nil and "fname" or "name", "string", name, 1) end
 	if fname == nil then
 		fname = name
 		name = getFilename(name)
 	else
-		if type(fname) ~= "string" then typeCheckError(funcName, 2, "fname", "string", fname) end
+		if type(fname) ~= "string" then typeCheckError(funcName, 2, "fname", "string", fname, 1) end
 	end
 	local context = GetModContext()
 	local finalfname = ResolveModPath()..fname
-	contextVerify(all_sounds, name, context, "Sound")
+	contextVerify(all_sounds, name, context, "Sound", 1)
 	
 	local s = GML.sound_add(finalfname)
 	if s < 0 then
