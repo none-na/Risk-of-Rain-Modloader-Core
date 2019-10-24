@@ -108,7 +108,7 @@ require "api/class/object/GMObjectBase"
 
 require "api/class/Sound"
 
---require "api/class/Camera"
+require "api/class/Camera"
 
 require "io"
 

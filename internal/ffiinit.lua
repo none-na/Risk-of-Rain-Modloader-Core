@@ -103,7 +103,6 @@ ffi.cdef[[
 	void instance_destroy(double instance, double event);
 	double instance_exists(double instance);
 	double get_object_index(double instance);
-	double get_object_index_unsafe(double instance);
 	double object_is_ancestor(double child, double parent);
 	double read_alarm(double id, double alarm);
 	void write_alarm(double id, double alarm, double value);
@@ -343,6 +342,15 @@ ffi.cdef[[
 	double collision_line_list(double x1, double y1, double x2, double y2, double obj, double prec, double notme);
 	double collision_point(double x, double y, double obj, double prec, double notme);
 	double collision_point_list(double x, double y, double obj, double prec, double notme);
+	double camera_get_view_width(double camera);
+	double camera_get_view_height(double camera);
+	double camera_get_view_x(double camera);
+	double camera_get_view_y(double camera);
+	double camera_get_view_angle(double camera);
+	double camera_set_view_size(double camera, double width, double height);
+	double camera_set_view_pos(double camera, double x, double y);
+	double camera_set_view_angle(double camera, double angle);
+	double view_get_camera(double index);
 	void resource_register_id(double type, double id, const char* origin, const char* name);
 	void writebyte(double value);
 	double readbyte();
@@ -401,6 +409,7 @@ ffi.cdef[[
 	void init_enemy(double enemy, double log);
 	void enemy_enable_callback(double enemy, double callback);
 	double get_stats_multiplier(int stat);
+	double enemy_set_custom_activity_state(double instance, double skill, double sprite, double speed, double type, double cooldown, double resetSpeed);
 	void player_item_remove(double id, double item, double count);
 	void player_item_give(double id, double item, double count);
 	double player_item_count(double id, double item);
