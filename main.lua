@@ -110,7 +110,7 @@ require "api/class/Sound"
 
 require "api/class/Camera"
 
-require "io"
+require "api/io"
 
 require "api/class/ParticleType"
 
