@@ -138,6 +138,16 @@ lookup.rooms = {
 	end
 }
 
+lookup.teleporterIndex = {
+	get = function(t)
+		return AnyTypeRet(GML.ds_map_find_value(ids[t], AnyTypeArg("tp")))
+	end,
+	set = function(t, v)
+		if type(v) ~= "number" then fieldTypeError("Stage.teleporterIndex", "number", v) end
+		GML.ds_map_replace(ids[t], AnyTypeArg("tp"), AnyTypeArg(v))
+	end,
+}
+
 ------------------------------------------
 -- GLOBAL FUNCTIONS ----------------------
 ------------------------------------------
@@ -206,14 +216,35 @@ do
 		if type(name) ~= "string" then typeCheckError(fname, 1, "name", "string", name, 1) end
 		local context = GetModContext()
 
-		contextVerify(all_rooms, name, context, "Stage", 1)
+		contextVerify(all_stages, name, context, "Stage", 1)
 
-		local nid = GML.room_duplicate(base_room)
+		local nid = GML.ds_map_create()
 		local new = static.new(nid)
+		contextInsert(all_stages, name, context, new)
 
-		room_name[new] = name
-		room_origin[new] = context
-		id_to_room[nid] = new
+		local enemy_list = GML.ds_list_create()
+		local interactable_list = GML.ds_list_create()
+		local rarity_map = GML.ds_map_create()
+		local room_list = GML.ds_list_create()
+
+		stage_name[new] = name
+		stage_origin[new] = context
+		stage_subname[new] = ""
+		stage_list_interactable[new] = dsWrapper.list(interactable_list, "Interactable", RoRInteractable)
+		stage_map_interactable_rarity[new] = dsWrapper.map(AnyTypeRetrarity_map, "Interactable", RoRInteractable, nil, "number", nil, nil)
+		stage_list_enemy[new] = dsWrapper.list(enemy_list, "Enemy", RoREnemy)
+		stage_list_rooms[new] = dsWrapper.list(room_list, "Room", GMRoom, nil, stageRoomAdded, stageRoomRemoved)
+
+		room_list_to_stage[stage_list_rooms[new]] = new
+		id_to_stage[nid] = new
+
+		GML.ds_map_replace(nid, AnyTypeArg("name"), AnyTypeArg(name))
+		GML.ds_map_replace(nid, AnyTypeArg("subname"), AnyTypeArg(""))
+		GML.ds_map_replace(nid, AnyTypeArg("enemies"), AnyTypeArg(enemy_list))
+		GML.ds_map_replace(nid, AnyTypeArg("rooms"), AnyTypeArg(room_list))
+		GML.ds_map_replace(nid, AnyTypeArg("chests"), AnyTypeArg(interactable_list))
+		GML.ds_map_replace(nid, AnyTypeArg("rarity"), AnyTypeArg(rarity_map))
+		GML.ds_map_replace(nid, AnyTypeArg("tp"), AnyTypeArg(6))
 
 		return new
 	end
