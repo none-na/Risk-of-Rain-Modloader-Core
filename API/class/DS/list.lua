@@ -10,6 +10,9 @@ local list_type = setmetatable({}, {__mode = "k"})
 local list_to_gml = setmetatable({}, {__mode = "k"})
 local list_from_gml = setmetatable({}, {__mode = "k"})
 
+local list_on_remove = setmetatable({}, {__mode = "k"})
+local list_on_add = setmetatable({}, {__mode = "k"})
+
 function meta:__typeof()
 	return "List<" .. list_type[self] .. ">"
 end
@@ -63,6 +66,9 @@ function lookup:add(value)
 	local id = ids[self]
 	local gmValue = list_to_gml[self](value)
 	if GML.ds_list_find_index(id, AnyTypeArg(gmValue)) < 0 then
+		if list_on_add[self] ~= nil then
+			list_on_add[self](self, value)
+		end
 		GML.ds_list_add(id, AnyTypeArg(gmValue))
 		return true
 	else
@@ -78,6 +84,9 @@ function lookup:remove(value)
 	local gmValue = list_to_gml[self](value)
 	local index = GML.ds_list_find_index(id, AnyTypeArg(gmValue))
 	if index >= 0 then
+		if list_on_remove[self] ~= nil then
+			list_on_remove[self](self, value)
+		end
 		GML.ds_list_delete(id, index)
 		return true
 	else
@@ -127,7 +136,7 @@ end
 
 
 -- Constructor
-function dsWrapper.list(id, type, to, from)
+function dsWrapper.list(id, type, to, from, onAdd, onRemove)
 	local n = static.new(id)
 	if to and not from then
 		from = to.fromID
@@ -136,5 +145,7 @@ function dsWrapper.list(id, type, to, from)
 	list_type[n] = type
 	list_to_gml[n] = to or dsWrapper.dummy
 	list_from_gml[n] = from or dsWrapper.dummy
+	list_on_add[n] = onAdd
+	list_on_remove[n] = onRemove
 	return n
 end

@@ -27,13 +27,29 @@ local raw_progression = {}
 local raw_progression_limit = AnyTypeRet(GML.variable_instance_get(GML_init_instance_id, "last_level")) + 1
 
 RoRStage = {
-	toGML = function(stage)
+	toID = function(stage)
 		return ids[stage]
 	end,
-	fromGML = function(stage)
+	fromID = function(stage)
 		return id_to_stage[stage]
 	end
 }
+
+-- Used for updating map of room -> stage for online coop
+local room_map_id = AnyTypeRet(GML.variable_global_get("levelmap"))
+local room_list_to_stage = {}
+local function stageRoomAdded(list, room)
+	local roomID = GMRoom.toID(room)
+	local oldValue = AnyTypeRet(GML.ds_map_find_value(room_map_id, AnyTypeArg(roomID)))
+	if oldValue ~= nil then
+		error("room is already in use by another stage (" .. tostring(id_to_stage[oldValue]) .. ")", 3)
+	else
+		GML.ds_map_replace(room_map_id, AnyTypeArg(roomID), AnyTypeArg(ids[room_list_to_stage[list]]))
+	end
+end
+local function stageRoomRemoved(list, room)
+	GML.ds_map_delete(room_map_id, AnyTypeArg(GMRoom.toID(room)))
+end
 
 ------------------------------------------
 -- COMMON	 ------------------------------
@@ -116,6 +132,12 @@ lookup.interactableRarity = {
 	end
 }
 
+lookup.rooms = {
+	get = function(t)
+		return stage_list_rooms[t]
+	end
+}
+
 ------------------------------------------
 -- GLOBAL FUNCTIONS ----------------------
 ------------------------------------------
@@ -158,12 +180,12 @@ function Stage.progressionLimit(value)
 	if value ~= nil then
 		-- Setting
 		raw_progression_limit = value
-		GML.variable_instane_set(GML_init_instance_id, "last_level", AnyTypeArg(raw_progression_limit - 1))
+		GML.variable_instance_set(GML_init_instance_id, "last_level", AnyTypeArg(raw_progression_limit - 1))
 		-- Add missing stage lists
 		while #raw_progression < raw_progression_limit do
 			local id = GML.ds_list_create()
 			raw_progression[#raw_progression + 1] = dsWrapper.list(id, "Stage", RoRStage)
-			GML.array_global_write_1("levellist", id)
+			GML.array_global_write_1("levellist", AnyTypeArg(id), #raw_progression)
 		end
 	end
 
@@ -174,6 +196,36 @@ function Stage.getProgression(index)
 	if type(index) ~= "number" then typeCheckError("Stage.getProgression", 1, "index", "number", index) end
 	return raw_progression[index]
 end
+
+------------------------------------------
+-- CONSTRUCTOR ---------------------------
+------------------------------------------
+
+do
+	local function new_stage(fname, name)
+		if type(name) ~= "string" then typeCheckError(fname, 1, "name", "string", name, 1) end
+		local context = GetModContext()
+
+		contextVerify(all_rooms, name, context, "Stage", 1)
+
+		local nid = GML.room_duplicate(base_room)
+		local new = static.new(nid)
+
+		room_name[new] = name
+		room_origin[new] = context
+		id_to_room[nid] = new
+
+		return new
+	end
+
+	function Stage.new(name)
+		return new_stage("Stage.new", name)
+	end
+	setmetatable(Stage, {__call = function(t, name)
+		return new_stage("Stage", name)
+	end})
+end
+
 
 ------------------------------------------
 -- WRAP VANILLA STAGES -------------------
@@ -203,8 +255,9 @@ do
 		stage_list_interactable[new] = dsWrapper.list(AnyTypeRet(GML.ds_map_find_value(v, AnyTypeArg("chests"))), "Interactable", RoRInteractable)
 		stage_map_interactable_rarity[new] = dsWrapper.map(AnyTypeRet(GML.ds_map_find_value(v, AnyTypeArg("rarity"))), "Interactable", RoRInteractable, nil, "number", nil, nil)
 		stage_list_enemy[new] = dsWrapper.list(AnyTypeRet(GML.ds_map_find_value(v, AnyTypeArg("enemies"))), "Enemy", RoREnemy)
-		stage_list_rooms[new] = dsWrapper.list(AnyTypeRet(GML.ds_map_find_value(v, AnyTypeArg("rooms"))), "Room", GMRoom)
+		stage_list_rooms[new] = dsWrapper.list(AnyTypeRet(GML.ds_map_find_value(v, AnyTypeArg("rooms"))), "Room", GMRoom, nil, stageRoomAdded, stageRoomRemoved)
 		stage_origin[new] = "Vanilla"
+		room_list_to_stage[stage_list_rooms[new]] = new
 		id_to_stage[v] = new
 		all_stages.vanilla[stage_name[new]:lower()] = new
 	end

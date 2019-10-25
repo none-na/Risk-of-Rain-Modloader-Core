@@ -54,8 +54,12 @@ do
 	local base_room = GML.asset_get_index("rCustomMap")
 
 	local function new_room(fname, name)
-		if type(name) ~= "string" then typeCheckError(fname, 1, "name", "string", name, 1) end
+		if name ~= nil and type(name) ~= "string" then typeCheckError(fname, 1, "name", "string or nil", name, 1) end
 		local context = GetModContext()
+
+		if name == nil then
+			name = "[Room" .. tostring(contextCount(all_rooms, context)) .. "]"
+		end
 
 		contextVerify(all_rooms, name, context, "Room", 1)
 
@@ -80,13 +84,20 @@ end
 -- Wrap
 do
 	local t = all_rooms.vanilla
-	local i = 0
+	local i = 1 -- Skip rInit
+	local room_blacklist = {rCustomMap = true}
 	while GML.room_exists(i) > 0 do
-		local new = static.new(i)
-		room_origin[new] = "Vanilla"
 		local name = ffi.string(GML.room_get_name(i))
-		name = name:sub(2, name:len())
-		room_name[new] = name
+		if not room_blacklist[name] then
+			local new = static.new(i)
+			room_origin[new] = "Vanilla"
+			if name:sub(1, 4) ~= "room" then
+				name = name:sub(2, name:len())
+			end
+			room_name[new] = name
+			id_to_room[i] = new
+			t[name:lower()] = new
+		end
 		i = i + 1
 	end
 end
