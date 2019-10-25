@@ -101,7 +101,12 @@ end
 
 RoRInteractable = {
 	ids = ids,
-	fromID = interactable_from_id
+	toID = function(v)
+		return ids[v]
+	end,
+	fromID = function(v)
+		return interactable_from_id[v]
+	end
 }
 
 -- env

@@ -94,7 +94,7 @@ do
 	end
 end
 
-require "api/class/List"
+require "api/class/DS/dsWrapper"
 
 require "internal/callbackHandler"
 
@@ -132,13 +132,15 @@ require "api/class/Difficulty"
 
 require "api/class/Survivor"
 
-require "api/class/Stage"
-
 require "api/class/Buff"
 
 require "api/class/Achievement"
 
 require "api/class/actor/Enemy"
+
+require "api/class/Room"
+
+require "api/class/Stage"
 
 require "api/module/misc"
 

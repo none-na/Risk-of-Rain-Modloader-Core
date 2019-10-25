@@ -264,6 +264,7 @@ ffi.cdef[[
 	void ds_map_replace(double map, any_type* key, any_type* value);
 	void ds_map_delete(double map, any_type* key);
 	double ds_map_exists(double map, any_type* key);
+	void ds_map_get_keys(double map);
 	double ds_exists(double id, double type);
 	double fire_bullet(long long self, float x, float y, float direction, int distance, float damage, int sprite, int properties);
 	double fire_explosion(long long self, float x, float y, float width, float height, float damage, int sprite, int hitSprite, int properties);
@@ -351,6 +352,13 @@ ffi.cdef[[
 	double camera_set_view_pos(double camera, double x, double y);
 	double camera_set_view_angle(double camera, double angle);
 	double view_get_camera(double index);
+	void room_set_width(double index, double width);
+	void room_set_height(double index, double height);
+	double room_add();
+	double room_duplicate(double baseRoom);
+	double room_exists(double index);
+	const char* room_get_name(double index);
+	double room_instance_create(double index, double x, double y, double gmObject);
 	void resource_register_id(double type, double id, const char* origin, const char* name);
 	void writebyte(double value);
 	double readbyte();

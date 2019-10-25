@@ -100,7 +100,12 @@ end
 
 function typeOf(v)
 	if instanceOf[v] then
-		return classData[instanceOf[v]].name
+		local dat = classData[instanceOf[v]]
+		if dat.meta.__typeof then
+			return dat.meta.__typeof(v)
+		else
+			return dat.name
+		end
 	else
 		return type(v)
 	end

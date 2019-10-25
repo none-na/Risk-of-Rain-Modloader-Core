@@ -10,6 +10,10 @@ local list_type = setmetatable({}, {__mode = "k"})
 local list_to_gml = setmetatable({}, {__mode = "k"})
 local list_from_gml = setmetatable({}, {__mode = "k"})
 
+function meta:__typeof()
+	return "List<" .. list_type[self] .. ">"
+end
+
 -- [] lookup
 do
 	function meta:__index(k)
@@ -83,7 +87,7 @@ end
 
 -- Tostring
 meta.__tostring = function(t)
-	local str = "List<" .. list_type[t] .. ">["
+	local str = "List<" .. list_type[t] .. ">{"
 
 	local id = ids[t]
 	local conv = list_from_gml[t]
@@ -100,7 +104,7 @@ meta.__tostring = function(t)
 		end
 	end
 
-	str = str .. "]"
+	str = str .. "}"
 	return str
 end
 
@@ -123,11 +127,14 @@ end
 
 
 -- Constructor
-dsWrapper = {}
 function dsWrapper.list(id, type, to, from)
 	local n = static.new(id)
+	if to and not from then
+		from = to.fromID
+		to = to.toID
+	end
 	list_type[n] = type
-	list_to_gml[n] = to
-	list_from_gml[n] = from
+	list_to_gml[n] = to or dsWrapper.dummy
+	list_from_gml[n] = from or dsWrapper.dummy
 	return n
 end
