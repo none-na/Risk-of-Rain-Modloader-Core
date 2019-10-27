@@ -20,6 +20,12 @@ function verifyCallback(func, level)
 	end
 end
 
+function verifyIngame(name, level)
+	if not INGAME then
+		error("attempting to call " .. tostring(name) .. " while not in-game ", 3 + (level or 0))
+	end
+end
+
 function contextSearch(t, fname)
 	return function(name, namespace)
 		if type(name) ~= "string" then typeCheckError(fname, 1, "name", "string", name) end

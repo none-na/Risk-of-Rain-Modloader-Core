@@ -159,19 +159,17 @@ Stage.find = contextSearch(all_stages, "Stage.find")
 Stage.findAll = contextFindAll(all_stages, "Stage.findAll")
 
 function Stage.getCurrentStage()
-	if DisableInstanceInteraction then return end
+	verifyIngame("Stage.getCurrentStage")
 	return id_to_stage[AnyTypeRet(GML.variable_global_get("stage_index"))]
 end
 
 function Stage.getDimensions()
-	if DisableInstanceInteraction then return end
 	return AnyTypeRet(GML.variable_global_get("room_width")), AnyTypeRet(GML.variable_global_get("room_height"))
 end
 
 function Stage.collidesPoint(x, y)
 	if type(x) ~= "number" then typeCheckError("Stage.collidesPoint", 1, "x", "number", x) end
 	if type(y) ~= "number" then typeCheckError("Stage.collidesPoint", 2, "y", "number", y) end
-	if DisableInstanceInteraction then return end
 	return GML.map_point_collision(x, y) > 0
 end
 
@@ -180,7 +178,6 @@ function Stage.collidesRectangle(x1, y1, x2, y2)
 	if type(y1) ~= "number" then typeCheckError("Stage.collidesPoint", 2, "y1", "number", y1) end
 	if type(x2) ~= "number" then typeCheckError("Stage.collidesPoint", 3, "x2", "number", x2) end
 	if type(y2) ~= "number" then typeCheckError("Stage.collidesPoint", 4, "y2", "number", y2) end
-	if DisableInstanceInteraction then return end
 	return GML.map_rect_collision(x1, y1, x2, y2) > 0
 end
 
@@ -205,6 +202,12 @@ end
 function Stage.getProgression(index)
 	if type(index) ~= "number" then typeCheckError("Stage.getProgression", 1, "index", "number", index) end
 	return raw_progression[index]
+end
+
+function Stage.transport(stage)
+	verifyIngame("Stage.transport")
+	if typeOf(stage) ~= "Stage" then typeCheckError("Stage.transport", 1, "stage", "Stage", stage) end
+	GML.stage_goto(ids[stage])
 end
 
 ------------------------------------------

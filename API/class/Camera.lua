@@ -28,7 +28,6 @@ lookup.width = {
 }
 lookup.height = {
 	get = function(t) 
-		verifyCameraCall(t)
 		return GML.camera_get_view_height(ids[t])
 	end,
 	set = function(t, v)
@@ -53,7 +52,7 @@ lookup.x = {
 }
 lookup.y = {
 	get = function(t)
-		return GML.camera_get_view_y(ids[self])
+		return GML.camera_get_view_y(ids[t])
 	end,
 	set = function(t, v)
 		if typeOf(v) ~= "number" then fieldTypeError("Camera.y", "number", v) end

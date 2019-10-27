@@ -30,12 +30,12 @@ end
 
 -- Money
 function misc.getGold()
-	if DisableInstanceInteraction then return end
+	if LOAD_IN_PROGRESS then return 0 end
 	return AnyTypeRet(GML.variable_instance_get(GML_hud_instance_id, "gold"))
 end
 
 function misc.setGold(value)
-	if DisableInstanceInteraction then return end
+	if LOAD_IN_PROGRESS then return end
 	if type(value) ~= "number" then typeCheckError("misc.setGold", 1, "value", "number", value) end
 	GML.variable_instance_set(GML_hud_instance_id, "gold", AnyTypeArg(value))
 end
@@ -47,7 +47,7 @@ end
 
 local tick_sound = GML.asset_get_index("wWatch")
 function misc.setTimeStop(value)
-	if DisableInstanceInteraction then return end
+	if LOAD_IN_PROGRESS then return end
 	if type(value) ~= "number" then typeCheckError("misc.setTimeStop", 1, "value", "number", value) end
 	GML.variable_global_set("time_stop", AnyTypeArg(value))
 	if GML.sound_isplaying(tick_sound) == 0 then
@@ -57,13 +57,13 @@ end
 
 -- Time
 function misc.getTime()
-	if DisableInstanceInteraction then return end
+	if LOAD_IN_PROGRESS then return 0, 0 end
 	return AnyTypeRet(GML.variable_instance_get(GML_hud_instance_id, "minute")), AnyTypeRet(GML.variable_instance_get(GML_hud_instance_id, "second"))
 end
 
 -- Screenshake
 function misc.shakeScreen(frames)
-	if DisableInstanceInteraction then return end
+	if LOAD_IN_PROGRESS then return end
 	if type(frames) ~= "number" then typeCheckError("misc.shakeScreen", 1, "frames", "number", frames) end
 	GML.write_alarm(GML_hud_instance_id, 0, frames)
 end
@@ -120,6 +120,11 @@ function misc.setRunSeed(seed)
 		if seed <= 0 then error("run seed must be greater than 0", 2) end
 	end
 	GML.variable_global_set("game_seed", AnyTypeArg(seed))
+end
+
+-- Check if ingame
+function misc.getIngame()
+	return INGMAE
 end
 
 -- Add to mod environment

@@ -14,9 +14,6 @@ __tostring_default_instance = function(obj)
 end
 meta.__tostring = __tostring_default_instance
 
--- Flag for when the game is still loading
-DisableInstanceInteraction = true
-
 -- Callback-local verified instances. Resets each callback call
 VerifiedInstances = {}
 
@@ -29,8 +26,6 @@ local function verifyInstCall(id)
 	if not VerifiedInstances[id] then
 		if GML.instance_exists(id) ~= 1 then
 			error("attempt to access invalid instance reference, the instance no longer exists", 3)
-		elseif DisableInstanceInteraction then
-			error("attempt to access instance reference during game load, access is disabled", 3)
 		elseif obj_locked[instance_object[self]] then
 			error("attempt to access instance of a locked object", 3)
 		end

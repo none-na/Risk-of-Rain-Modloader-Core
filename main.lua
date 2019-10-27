@@ -94,6 +94,9 @@ do
 	end
 end
 
+LOAD_IN_PROGRESS = true
+INGAME = false
+
 require "api/class/DS/dsWrapper"
 
 require "internal/callbackHandler"
@@ -112,7 +115,7 @@ require "api/class/Sound"
 
 require "api/class/Camera"
 
-require "api/io"
+-- require "api/io"
 
 require "api/class/ParticleType"
 
@@ -155,6 +158,7 @@ local function initializeRun()
 	ResetGraphics()
 	mods.clearPlayerList()
 	mods.updateDirectorInstance()
+	INGAME = true
 	RefreshNetAPI(mods.netAPIList)
 end
 
@@ -167,6 +171,11 @@ end
 function CallbackHandlers.initializeRun()
 	local success, err = pcall(initializeRun)
 	if err then log("initializeRun:", err) end
+end
+
+-- Called before onGameEnd
+function CallbackHandlers.cleanRun()
+	INGAME = false
 end
 
 function CallbackHandlers.updatePlayerList()

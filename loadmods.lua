@@ -130,5 +130,5 @@ function CallbackHandlers.loadAllMods(args)
 	mods.initFunctionQueue = nil
 	FireCallback({"onLoad"})
 	FireCallback({"postLoad"})
-	DisableInstanceInteraction = false
+	LOAD_IN_PROGRESS = false
 end
