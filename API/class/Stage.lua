@@ -288,7 +288,7 @@ do
 		stage_subname[new] = AnyTypeRet(GML.ds_map_find_value(v, AnyTypeArg("subname")))
 		stage_list_interactable[new] = dsWrapper.list(AnyTypeRet(GML.ds_map_find_value(v, AnyTypeArg("chests"))), "Interactable", RoRInteractable)
 		stage_map_interactable_rarity[new] = dsWrapper.map(AnyTypeRet(GML.ds_map_find_value(v, AnyTypeArg("rarity"))), "Interactable", RoRInteractable, nil, "number", nil, nil)
-		stage_list_enemy[new] = dsWrapper.list(AnyTypeRet(GML.ds_map_find_value(v, AnyTypeArg("enemies"))), "Enemy", RoREnemy)
+		stage_list_enemy[new] = dsWrapper.list(AnyTypeRet(GML.ds_map_find_value(v, AnyTypeArg("enemies"))), "MonsterCard", RoRMonsterCard)
 		stage_list_rooms[new] = dsWrapper.list(AnyTypeRet(GML.ds_map_find_value(v, AnyTypeArg("rooms"))), "Room", GMRoom, nil, stageRoomAdded, stageRoomRemoved)
 		stage_origin[new] = "Vanilla"
 		room_list_to_stage[stage_list_rooms[new]] = new

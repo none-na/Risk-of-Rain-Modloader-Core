@@ -129,6 +129,8 @@ ffi.cdef[[
 	void draw_sprite_part(int sprite_index, int image_index, float left, float top, float width, float height, float x, float y);
 	void draw_sprite_ext(int sprite_index, int image_index, float x, float y, float xscale, float yscale, float angle, int colour, float alpha);
 	void draw_sprite_pos(int sprite, int subimg, float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4, float alpha);
+	void draw_sprite_part_ext(double sprite_index, double image_index, double left, double top, double width, double height, double x, double y, double xscale, double yscale, double col, double alpha);
+	void draw_sprite_general(double sprite, double subimg, double left, double top, double width, double height, double x, double y, double xscale, double yscale, double rot, double c1, double c2, double c3, double c4, double alpha);
 	void draw_set_halign(int type);
 	void draw_set_valign(int type);
 	void draw_text(float x, float y, const char* text);
@@ -186,6 +188,7 @@ ffi.cdef[[
 	void surface_reset_target();
 	void draw_surface(int id, float x, float y);
 	void draw_surface_ext(int id, float x, float y, float xscale, float yscale, float rot, float col, float alpha);
+	void draw_surface_general(double id, double left, double top, double w, double h, double x, double y, double xscale, double yscale, double rot, double c1, double c2, double c3, double c4, double alpha);
 	void draw_surface_part(int id, float xo, float yo, float w, float h, float x, float y);
 	void draw_surface_part_ext(int id, float xo, float yo, float w, float h, float x, float y, float xscale, float yscale, int color, float alpha);
 	void draw_surface_stretched(int id, float x, float y, float width, float height);
@@ -380,6 +383,7 @@ ffi.cdef[[
 	void net_packet_end(double oldbuffer, double type, double target);
 	void net_packet_discard(double oldbuffer);
 	double net_find_object(double gmobj, double m_id);
+	void stage_goto(double stage);
 	double item_roll(double pool);
 	void item_drop(double instance, double type);
 	void item_set_cooldown(double item, float cooldown);
@@ -434,5 +438,7 @@ ffi.cdef[[
 	void gpu_set_blendmode_ext(double src, double dest);
 	void gpu_set_blendmode_ext_sepalpha(double src, double dest, double alphasrc, double alphadest);
 	void gpu_set_colorwriteenable(double red, double green, double blue, double alpha);
+	double alloc_monster_log(const char* name, const char* origin);
+	double alloc_monster_card(const char* name, const char* origin, double object);
 ]]
 GML = ffi.C

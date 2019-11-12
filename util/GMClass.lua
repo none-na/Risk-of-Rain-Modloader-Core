@@ -14,7 +14,39 @@ local fastCheckTypes = {
 	string = true
 }
 
-return function(args)
+local sharedMT = {__call = function(self, ...) return self.new(...) end}
+
+local gmClassIDs = setmetatable({}, {__mode = "k"})
+local gmClassArrays = setmetatable({}, {__mode = "k"})
+
+local function typeCheck(classChildren, name, func, args)
+	local st = "local t = typeOf return function(f,c)return function("
+	if classChildren ~= nil then st = st .. "s" end
+	for i = 1, #args do
+		if i > 1 or classChildren ~= nil then st = st .. "," end
+		st = st .. "a" .. tostring(i)
+	end
+	st = st .. ")"
+	if classChildren ~= nil then
+		st = st .. "if c[s]==nil then methodCallError('" .. name .. "',s)end "
+	end
+	for k, v in ipairs(args) do
+		local needed = v
+		local argname = nil
+		if type(v) ~= "string" then argname = v[1] needed = v[2] end
+		st = st .. "if t(a" .. tostring(k) .. ")~='" .. needed .. "'then typeCheckError('" .. name .. "',"..tostring(k)..",'" .. (argname or "argument " .. tostring(k)) .. "','" .. needed .. "',a" .. tostring(k) .. ")end "
+	end
+	st = st .. "return f("
+	if classChildren ~= nil then st = st .. "s" end
+	for i = 1, #args do
+		if i > 1 or classChildren ~= nil then st = st .. "," end
+		st = st .. "a" .. tostring(i)
+	end	
+	st = st .. ") end end"
+	return loadstring(st)()(func, classChildren)
+end
+
+local func = function(args)
 	
 	------------------------------------------
 	------------------------------------------
@@ -32,6 +64,15 @@ return function(args)
 	local originIndex, nameIndex = args.originIndex, args.nameIndex
 	if type(originIndex) ~= type(nameIndex) or (originIndex ~= nil and type(originIndex) ~= "number") then error("bad origin or name index") end
 
+	-- Class ctor
+	local allocator = args.allocator
+	local allocatorTypes
+	if type(allocator) == "table" then
+		allocatorTypes = allocator[2]
+		if allocatorTypes ~= nil and type(allocatorTypes) ~= "table" then error("bad allocator types") end
+		allocator = allocator[1]
+	end
+	if allocator ~= nil and type(allocator) ~= "function" then error("bad allocator") end
 
 	-- Net type id
 	local netRegisterIndex = args.netRegisterIndex
@@ -57,6 +98,12 @@ return function(args)
 		meta.__tostring = __tostring_default_namespace
 	end
 
+	-- Automatically add IDs to table
+	function meta:__init(id)
+		gmClassIDs[self] = id
+		gmClassArrays[self] = arrayName
+	end
+
 	------------------------------------------
 	------------------------------------------
 	-- Populate fields
@@ -72,7 +119,7 @@ return function(args)
 
 	-- Collect all fields by type
 	for k, v in pairs(args) do
-		if type(v) == "table" then
+		if type(v) == "table" and k ~= "allocator" then
 			local fieldKind = v[1]
 			if not fields[fieldKind] then error("unknown field kind for " .. tostring(k)) end
 			v.k = k
@@ -82,10 +129,9 @@ return function(args)
 
 	-- Array fields
 	for _, v in ipairs(fields.f) do
-		local id, ttype, default, mode = v[2], v[3], v[4], v[5]
+		local id, ttype, mode = v[2], v[3], v[4]
 		if type(id) ~= "number" then error("bad field id") end
 		if type(ttype) ~= "string" then error("bad field type") end
-		if default ~= nil and typeOf(default) ~= ttype then error("bad field default") end
 		if mode ~= nil and type(mode) ~= "string" then error("bad field mode") end
 
 		local f = {}
@@ -184,8 +230,8 @@ return function(args)
 
 		local fieldName = v.k
 
-		f.getter = getter
-		f.setter = setter
+		f.get = getter
+		f.set = setter
 
 		lookup[fieldName] = f
 	end
@@ -194,10 +240,7 @@ return function(args)
 	for _, v in ipairs(fields.l) do
 		local methodName = v.k
 		local method = v[2]
-		lookup[methodName] = function(self, ...)
-			if not children[self] then methodCallError(className .. ":" .. methodName, self) end
-			return method(self, ...)
-		end
+		lookup[methodName] = typeCheck(children, methodName, method, v[3] or {})
 	end
 
 	-- Aliases
@@ -218,10 +261,6 @@ return function(args)
 			return AnyTypeRet(GML.array_global_read_2(arrayName, ids[self], nameIndex))
 		end
 	end
-
-	lookup.id = {get = function(self) return ids[self] end}
-	lookup.ID = lookup.id
-
 	-- Out table
 	--[[if type(args.out) == "table" then
 		local out = args.out
@@ -233,11 +272,20 @@ return function(args)
 	
 	local classNew = static.new
 	local allIds, idToObj
+	local new
 	if originIndex ~= nil then
 		allIds, idToObj = {vanilla = {}}, setmetatable({}, {__mode = "v"})
+		
+		function new(id, ...)
+			if not idToObj[id] then
+				idToObj[id] = classNew(id, ...)
+			end
+			return idToObj[id]
+		end
+
 		function find(name, namespace)
 			if type(name) ~= "string" then typeCheckError(className .. ":find", 1, "name", "string", name) end
-			if type(namespace) ~= "string" and namespace ~= nil then typeCheckError(className .. ":find", 1, "namespace", "string or nil", namespace) end
+			if type(namespace) ~= "string" and namespace ~= nil then typeCheckError(className .. ":find", 2, "namespace", "string or nil", namespace) end
 	
 			name = name:lower()
 			local outID = nil
@@ -263,14 +311,80 @@ return function(args)
 			if outID == nil then
 				return nil
 			else
-				local obj = classNew(id)
-				idToObj[outID] = obj
-				return obj
+				return new(outID)
+			end
+		end
+
+		function findAll(namespace)
+			if type(namespace) ~= "string" and namespace ~= nil then typeCheckError(className .. ":find", 1, "namespace", "string or nil", namespace) end
+	
+			local out = {}
+			if namespace == nil then
+				-- No namespace specified, get everything ever
+				for _, v in pairs(allIds) do
+					for _, id in pairs(v) do
+						out[#out + 1] = new(id)
+					end
+				end
+			else
+				namespace = namespace:lower()
+				if allIds[namespace] then
+					for _, id in pairs(allIds[namespace]) do
+						out[#out + 1] = new(id)
+					end
+				end
+			end
+
+			return out
+		end
+
+		if arrayName ~= nil and nameIndex ~= nil then
+			GML.array_open(arrayName)
+			-- Vanilla is ASSUMED for all built ins
+			local t = allIds.vanilla
+			for i = 0, GML.array_length() - 1 do
+				local name = AnyTypeRet(GML.array_read_2(i, nameIndex))
+				t[name:lower()] = i
+			end
+			GML.array_close()
+		end
+	else
+		new = static.new
+	end
+
+	local ctor
+
+	if nameIndex ~= nil and allocator ~= nil then
+		if allocatorTypes ~= nil then
+			table.insert(allocatorTypes, 1, {"name", "string"})
+			ctor = typeCheck(nil, className .. ".new", function(name, ...)
+				local context = GetModContext()
+				contextVerify(allIds, name, context, className, 1)
+				local id = allocator(context, name, ...)
+				contextInsert(allIds, name, context, id)
+				return new(id)
+			end, allocatorTypes)
+		else
+			function ctor(name, ...)
+				if type(name) ~= "string" then typeCheckError(className .. ".new", 1, "name", "string", name) end
+				local context = GetModContext()
+				contextVerify(allIds, name, context, className)
+				local id = allocator(context, name, ...)
+				contextInsert(allIds, name, context, id)
+				return new(id)
 			end
 		end
 	end
 
-	new = static.new
-	return setmetatable({new = new, find = find, findAll = findAll}, new and {__call = function(self, ...) return self.new(...) end} or nil)
+	return setmetatable({new = ctor, find = find, findAll = findAll}, sharedMT), new, ids
 end
 
+local function get(obj, index)
+	return AnyTypeRet(GML.array_global_read_2(gmClassArrays[obj], gmClassIDs[self], index))
+end
+
+local function set(obj, index, value)
+	return AnyTypeRet(GML.array_global_write_2(gmClassArrays[obj], AnyTypeArg(value), gmClassIDs[self], index))
+end
+
+return setmetatable({class = func, ids = gmClassIDs, get = get, set = set}, {__call = function(self, ...) return self.class(...) end})

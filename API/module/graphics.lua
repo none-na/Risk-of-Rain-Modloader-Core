@@ -253,20 +253,35 @@ do
 			angle = 0
 		end
 		
-		-- Color
-		local color = _get(args, "color")
-		-- Alias colour
-		if color == nil then
-			color = _get(args, "colour")
+		-- Solid color takes priority
+		local color
+		local solidColor = _get(args, "solidColor")
+		-- Alias
+		if solidColor == nil then
+			solidColor = _get(args, "solidColour")
 		end
-		if color ~= nil then
+		if solidColor ~= nil then
 			-- Type checking
-			if typeOf(color) ~= "Color" then
-				argError("color", "Color", color)
+			if typeOf(solidColor) ~= "Color" then
+				argError("solidColor", "Color", solidColor)
 			end
-		else
-			-- Default value
 			color = white
+		else
+			-- Color
+			color = _get(args, "color")
+			-- Alias colour
+			if color == nil then
+				color = _get(args, "colour")
+			end
+			if color ~= nil then
+				-- Type checking
+				if typeOf(color) ~= "Color" then
+					argError("color", "Color", color)
+				end
+			else
+				-- Default value
+				color = white
+			end
 		end
 		
 		-- Alpha
@@ -280,25 +295,58 @@ do
 			-- Default value
 			alpha = 1
 		end
+
+		-- Region
+		local region = _get(args, "region")
+		local _region_x, _region_y, _region_w, _region_h
+		if region ~= nil then
+			if typeOf(region) ~= "table" then argError("region", "table", region) end
+			_region_x = _get(region, "x") or _get(region, 1)
+			if type(_region_x) ~= "number" then argError("region.x", "number", _region_x) end
+			_region_y = _get(region, "y") or _get(region, 2)
+			if type(_region_y) ~= "number" then argError("region.y", "number", _region_y) end
+			_region_w = _get(region, "width") or _get(region, 3)
+			if type(_region_w) ~= "number" then argError("region.width", "number", _region_w) end
+			_region_h = _get(region, "height") or _get(region, 4)
+			if type(_region_h) ~= "number" then argError("region.height", "number", _region_h) end
+		end
 		
 		--------------
 		-- Draw it! --
 		--------------
 		
 		if is_sprite then
+			-- Sprite
 			if not sprite_valid(image) then
 				error("trying to draw nonexistent sprite", 2)
 			end
-			-- Sprite
-			GML.draw_sprite_ext(sprite_id[image], subimage - 1, x, y, xscale, yscale, angle, color_val(color), alpha)
+			if solidColor then
+				GML.gpu_set_fog(1, color_val(solidColor), 0, 0)
+			end
+			if region then
+				local col = color_val(color)
+				GML.draw_sprite_general(sprite_id[image], subimage - 1, _region_x, _region_y, _region_w, _region_h, x, y, xscale, yscale, angle, col, col, col, col, alpha)
+			else
+				GML.draw_sprite_ext(sprite_id[image], subimage - 1, x, y, xscale, yscale, angle, color_val(color), alpha)
+			end
 		else
 			-- Surface
 			if GML.surface_exists(surface_id[image]) == 0 then
 				error("trying to draw nonexistent surface", 2)
 			end
-			GML.draw_surface_ext(surface_id[image], x, y, xscale, yscale, angle, color_val(color), alpha)
+			if solidColor then
+				GML.gpu_set_fog(1, color_val(solidColor), 0, 0)
+			end
+			if region then
+				local col = color_val(color)
+				GML.draw_surface_part_ext(surface_id[image], _region_x, _region_y, _region_w, _region_h, x, y, xscale, yscale, angle, col, col, col, col, alpha)
+			else
+				GML.draw_surface_ext(surface_id[image], x, y, xscale, yscale, angle, color_val(color), alpha)
+			end
 		end
-		
+		if solidColor then
+			GML.gpu_set_fog(0, 0, 0, 0)
+		end
 	end
 end
 

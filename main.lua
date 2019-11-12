@@ -97,6 +97,10 @@ end
 LOAD_IN_PROGRESS = true
 INGAME = false
 
+--local require = function(...) log(...) require(...) end
+
+local API = {}
+
 require "api/class/DS/dsWrapper"
 
 require "internal/callbackHandler"
@@ -119,6 +123,10 @@ require "api/class/Camera"
 
 require "api/class/ParticleType"
 
+API.MonsterCard = require "api/class/MonsterCard"
+API.MonsterLog = require "api/class/MonsterLog"
+API.EliteType = require "api/class/EliteType"
+
 require "api/module/input"
 
 require "api/module/net"
@@ -139,8 +147,6 @@ require "api/class/Buff"
 
 require "api/class/Achievement"
 
-require "api/class/actor/Enemy"
-
 require "api/class/Room"
 
 require "api/class/Stage"
@@ -150,6 +156,11 @@ require "api/module/misc"
 require "api/defaultCallbacks"
 
 require "api/modConstants"
+
+for k, v in pairs(API) do
+	mods.modenv[k] = v
+	_G[k] = v
+end
 
 mods.modenv.print = print
 mods.modenv.log = log
