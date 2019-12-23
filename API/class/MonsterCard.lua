@@ -19,7 +19,7 @@ local class, wrap, ids = GMClass{
 	canBlight        = {  "f",     6, "boolean"   },
 
 	-- Read-only field containing a List<EliteType>
-	--eliteTypes       = {  "lf", function(self) return dsWrapper.list(GMClass.get(self, 11), "EliteType", RoRElite) end, nil   },
+	eliteTypes       = {  "lf", function(self) return dsWrapper.list(GMClass.get(self, 11), "EliteType", RoRElite) end, nil   },
 }
 
 -- Temporary until type conv stuff is more standard

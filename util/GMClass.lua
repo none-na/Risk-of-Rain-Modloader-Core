@@ -380,11 +380,11 @@ local func = function(args)
 end
 
 local function get(obj, index)
-	return AnyTypeRet(GML.array_global_read_2(gmClassArrays[obj], gmClassIDs[self], index))
+	return AnyTypeRet(GML.array_global_read_2(gmClassArrays[obj], gmClassIDs[obj], index))
 end
 
 local function set(obj, index, value)
-	return AnyTypeRet(GML.array_global_write_2(gmClassArrays[obj], AnyTypeArg(value), gmClassIDs[self], index))
+	return AnyTypeRet(GML.array_global_write_2(gmClassArrays[obj], AnyTypeArg(value), gmClassIDs[obj], index))
 end
 
 return setmetatable({class = func, ids = gmClassIDs, get = get, set = set}, {__call = function(self, ...) return self.class(...) end})
