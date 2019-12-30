@@ -11,9 +11,10 @@ local class, wrap, ids = GMClass{
 	-- Fields ----------------------
 	-- Name               Kind     Id  Type
 	displayName      = {  "f",     9 , "string"  },
-	statHP           = {  "f",     2 , "string"  },
-	statDamage       = {  "f",     3 , "string"  },
-	statSpeed        = {  "f",     4 , "string"  },
+	story            = {  "f",     1 , "string"  },
+	statHP           = {  "f",     2 , "number"  },
+	statDamage       = {  "f",     3 , "number"  },
+	statSpeed        = {  "f",     4 , "number"  },
 	sprite           = {  "f",     5 , "Sprite"  },
 	portrait         = {  "f",     6 , "Sprite"  },
 	portraitSubimage = {  "f",     8 , "number"  },

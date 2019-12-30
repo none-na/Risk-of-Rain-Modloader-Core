@@ -6,6 +6,7 @@ local GML = GML
 local typeConv = {
 	GMObject = GMObject,
 	Sprite = SpriteUtil,
+	Sound = {toID = function(v) return SoundUtil.ids[v] end, fromID = function(v) return SoundUtil.ids_map[v] end},
 	boolean = {toID = function(v) return v and 1 or 0 end, fromID = function(v) return v > 0.5 end},
 }
 local fastCheckTypes = {
@@ -140,6 +141,7 @@ local func = function(args)
 		local fieldName = v.k
 		local conv = typeConv[ttype]
 
+		local not_nillable = mode == nil or (not (mode:find("n") and true or false))
 		if conv ~= nil then 
 			-- Getter
 			if mode == nil or mode:find("r") then
@@ -150,11 +152,12 @@ local func = function(args)
 			-- Setter
 			if mode == nil or mode:find("w") then
 				function f.set(self, value)
-					if typeCheck(value) ~= ttype then fieldTypeError(className .. '.' .. fieldName, ttype, value) end
-					GML.array_global_write_2(arrayName, AnyTypeArg(conv.toID(value)), ids[self], id)
+					if typeCheck(value) ~= ttype and (not_nillable or value ~= nil) then fieldTypeError(className .. '.' .. fieldName, ttype, value) end
+					GML.array_global_write_2(arrayName, AnyTypeArg(value == nil and -4 or conv.toID(value)), ids[self], id)
 				end
 			end
 		else
+			if not not_nillable then error("nillable field not supported for convless gml fields (" .. fieldName .. ")") end
 			-- Getter
 			if mode == nil or mode:find("r") then
 				function f.get(self)
@@ -169,7 +172,6 @@ local func = function(args)
 				end
 			end
 		end
-
 		lookup[fieldName] = f
 	end
 
@@ -187,6 +189,7 @@ local func = function(args)
 		local fieldName = v.k
 		local conv = typeConv[ttype]
 
+		local not_nillable = mode == nil or (not (mode:find("n") and true or false))
 		if conv ~= nil then 
 			-- Getter
 			if mode == nil or mode:find("r") then
@@ -197,7 +200,7 @@ local func = function(args)
 			-- Setter
 			if mode == nil or mode:find("w") then
 				function f.set(self, value)
-					if typeCheck(value) ~= ttype then fieldTypeError(className .. '.' .. fieldName, ttype, value) end
+					if typeCheck(value) ~= ttype and (not_nillable or value ~= nil) then fieldTypeError(className .. '.' .. fieldName, ttype, value) end
 					setter(ids[self], conv.toID(value))
 				end
 			end
@@ -211,7 +214,7 @@ local func = function(args)
 			-- Setter
 			if mode == nil or mode:find("w") then
 				function f.set(self, value)
-					if typeCheck(value) ~= ttype then fieldTypeError(className .. '.' .. fieldName, ttype, value) end
+					if typeCheck(value) ~= ttype and (not_nillable or value ~= nil) then fieldTypeError(className .. '.' .. fieldName, ttype, value) end
 					setter(ids[self], value)
 				end
 			end
