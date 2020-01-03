@@ -244,7 +244,10 @@ do
 		GML.array_close()
 
 		if vanillaPlayedMap ~= nil then
-			GML.array_global_write_1("record_char", AnyTypeArg(AnyTypeRet(GML.ds_map_find_value(vanillaPlayedMap, AnyTypeArg(context .. "-" .. name)))), nid - 1)
+			local val = AnyTypeRet(GML.ds_map_find_value(vanillaPlayedMap, AnyTypeArg(context .. "-" .. name)))
+			if type(val) == "number" then
+				GML.array_global_write_1("record_char", AnyTypeArg(val), nid - 1)
+			end
 		end
 
 		contextInsert(all_survivors, name, context, new)
