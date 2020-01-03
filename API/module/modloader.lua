@@ -83,28 +83,32 @@ end
 -- Get displayed name
 function modloader.getModName(mod)
 	if type(mod) ~= "string" then typeCheckError("modloader.getModName", 1, "mod", "string", mod) end
-	if not mods.mods[mod] then yellAboutMissingMod() end
+    mod = string.lower(mod)
+	if not mods.mods[mod] then yellAboutMissingMod(mod) end
 	return mods.mods[mod].metadata.name
 end
 
 -- Get description
 function modloader.getModDescription(mod)
 	if type(mod) ~= "string" then typeCheckError("modloader.getModDescription", 1, "mod", "string", mod) end
-	if not mods.mods[mod] then yellAboutMissingMod() end
+    mod = string.lower(mod)
+	if not mods.mods[mod] then yellAboutMissingMod(mod) end
 	return mods.mods[mod].metadata.description or ""
 end
 
 -- Get raw version string
 function modloader.getModVersion(mod)
 	if type(mod) ~= "string" then typeCheckError("modloader.getModVersion", 1, "mod", "string", mod) end
-	if not mods.mods[mod] then yellAboutMissingMod() end
+    mod = string.lower(mod)
+	if not mods.mods[mod] then yellAboutMissingMod(mod) end
 	return mods.mods[mod].metadata.rawversion
 end
 
 -- Get author
 function modloader.getModAuthor(mod)
 	if type(mod) ~= "string" then typeCheckError("modloader.getModAuthor", 1, "mod", "string", mod) end
-	if not mods.mods[mod] then yellAboutMissingMod() end
+    mod = string.lower(mod)
+	if not mods.mods[mod] then yellAboutMissingMod(mod) end
 	return mods.mods[mod].metadata.author or ""
 end
 
