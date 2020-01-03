@@ -26,7 +26,7 @@ local class, wrap, ids = GMClass{
 	object           = {  "f",     4, "GMObject",  "r" },
 	sound            = {  "f",     5, "Sound",     "nrw" },
 	isBoss           = {  "f",     6, "boolean"   },
-	canBlight        = {  "f",     6, "boolean"   },
+	canBlight        = {  "f",    12, "boolean"   },
 
 	-- Enum field of spwan type
 	type             = {  "lf", type_get, type_set  },
