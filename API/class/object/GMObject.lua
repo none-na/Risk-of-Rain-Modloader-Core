@@ -279,7 +279,6 @@ do
 		"oHighscore", "oSelect", "oSelectCoop",
 		"oSelectMult", "oFairItemButton", "oCharPalette",
 		"oCredits", "oEfGameBeat", "oMenu",
-		"oAchievement", "oError",
 		-- Control objects
 		"objClient", "objServer", "oInit", "oConsole", "oLoadControl",
 		"rousrDissonance", "oTransformInto", "oCustomRoomControl", "oCustomRoomLayer",
