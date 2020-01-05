@@ -255,7 +255,7 @@ do
 	local object_nospawn_list = {
 		"oP", "oBullet", "oExplosion", "oEfPlayerDead", "oBodyCollector", "oBody",
 		"oWormBody", "oWormHead", "oWurmBody", "oWurmHead", "oWurmController",
-		"oCommandFinal", "oJellyLegs",
+		"oCommandFinal", "oJellyLegs", "oPrePlayer", 
 	}
 	-- Spawn disabled but destroy enabled objects
 	local object_yesdestroy_list = {
@@ -281,7 +281,7 @@ do
 		"oCredits", "oEfGameBeat", "oMenu",
 		"oAchievement", "oError",
 		-- Control objects
-		"objClient", "objServer", "oPrePlayer", "oInit", "oConsole", "oLoadControl",
+		"objClient", "objServer", "oInit", "oConsole", "oLoadControl",
 		"rousrDissonance", "oTransformInto", "oCustomRoomControl", "oCustomRoomLayer",
 		-- Parents
 		"pArtifact8Box", "pBlock", "pNPC", "pRope", "pFlying",
