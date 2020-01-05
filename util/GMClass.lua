@@ -8,6 +8,7 @@ local typeConv = {
 	Sprite = SpriteUtil,
 	Sound = {toID = function(v) return SoundUtil.ids[v] end, fromID = function(v) return SoundUtil.ids_map[v] end},
 	boolean = {toID = function(v) return v and 1 or 0 end, fromID = function(v) return v > 0.5 end},
+	Color = {toID = GetColorValue, fromID = ConstructColorObject},
 }
 local fastCheckTypes = {
 	number = true,
