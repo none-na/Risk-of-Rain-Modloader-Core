@@ -154,6 +154,53 @@ function lookup:getBuffs()
 end
 
 -----------------------------------------------
+-------------------------------------- ELITE --
+-----------------------------------------------
+-----------------------------------------------
+
+function lookup:getElite()
+	if not children[self] then methodCallError("ActorInstance:getElite", self) end
+	local prefix = self:get("prefix_type")
+	if prefix == 1 then
+		return RoRElite.fromID(self:get("elite_type"))
+	else
+		-- Not elite
+		return nil
+	end
+end
+
+function lookup:makeElite(type)
+	if not children[self] then methodCallError("ActorInstance:makeElite", self) end
+	if type ~= nil and typeOf(type) ~= "EliteType" then typeCheckError("ActorInstance:makeElite", 1, "type", "number", type) end
+	if type == nil then
+		return GML.enemy_set_elite_1(ids[self]) == 1
+	else
+		return GML.enemy_set_elite_2(ids[self], RoRElite.toID(type)) == 1
+	end
+end
+
+function lookup:getBlighted()
+	if not children[self] then methodCallError("ActorInstance:getBlighted", self) end
+	local prefix = self:get("prefix_type")
+	if prefix == 2 then
+		return self:get("blight_type")
+	else
+		-- Not blighted
+		return nil
+	end
+end
+
+function lookup:makeBlighted(type)
+	if not children[self] then methodCallError("ActorInstance:makeBlighted", self) end
+	if type ~= nil and typeOf(type) ~= "number" then typeCheckError("ActorInstance:makeBlighted", 1, "type", "number", type) end
+	if type == nil then
+		return GML.enemy_set_blighted_1(ids[self]) == 1
+	else
+		return GML.enemy_set_blighted_2(ids[self], type) == 1
+	end
+end
+
+-----------------------------------------------
 --------------------------------------- MISC --
 -----------------------------------------------
 -----------------------------------------------
