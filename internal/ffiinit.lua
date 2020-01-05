@@ -422,6 +422,12 @@ ffi.cdef[[
 	void enemy_enable_callback(double enemy, double callback);
 	double get_stats_multiplier(int stat);
 	double enemy_set_custom_activity_state(double instance, double skill, double sprite, double speed, double type, double cooldown, double resetSpeed);
+	double enemy_set_elite_1(double enemy);
+	double enemy_set_elite_2(double enemy, double type);
+	double enemy_set_blighted_1(double enemy);
+	double enemy_set_blighted_2(double enemy, double type);
+	double alloc_elite_type(const char* origin, const char* name);
+	void elite_generate_palettes(any_type* target);
 	void player_item_remove(double id, double item, double count);
 	void player_item_give(double id, double item, double count);
 	double player_item_count(double id, double item);
