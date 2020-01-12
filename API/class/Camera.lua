@@ -57,7 +57,7 @@ lookup.y = {
 	set = function(t, v)
 		if typeOf(v) ~= "number" then fieldTypeError("Camera.y", "number", v) end
 		if t == instance then GML.variable_global_set("___view_l_y", AnyTypeArg(v)) end
-		GML.camera_set_view_pos(ids[t], GML.camera_get_view_y(ids[t]), v)
+		GML.camera_set_view_pos(ids[t], GML.camera_get_view_x(ids[t]), v)
 	end
 }
 
