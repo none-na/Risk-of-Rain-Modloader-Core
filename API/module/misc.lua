@@ -124,7 +124,7 @@ end
 
 -- Check if ingame
 function misc.getIngame()
-	return INGMAE
+	return INGAME
 end
 
 -- Add to mod environment
