@@ -6,7 +6,11 @@ local class, wrap, ids = GMClass{
 	arrayName = "elite_info",
 	nameIndex = 3,
 	originIndex = 4,
-	allocator = {function(origin, name) return GML.alloc_elite_type(origin, name) end},
+	allocator = {function(origin, name)
+		local id = GML.alloc_elite_type(origin, name)
+		registerNetID("elite", id, origin, name)
+		return id
+	end},
 
 	-- Fields -------------------------------------
 	-- Name               Kind     Id  Type

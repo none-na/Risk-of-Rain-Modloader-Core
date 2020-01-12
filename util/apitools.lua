@@ -115,7 +115,8 @@ do
 		-- item = 3, -- These aren't used here
 		-- monster = 4,
 		-- class = 5,
-		sound = 6
+		sound = 6,
+		elite = 7
 	}
 	function registerNetID(type, id, origin, name)
 		-- Adds the ID to the system for syncing in online coop
