@@ -3,6 +3,8 @@ local AnyTypeRet = AnyTypeRet
 local AnyTypeArg = AnyTypeArg
 local GML = GML
 
+local floor = math.floor
+
 local typeConv = {
 	GMObject = GMObject,
 	Sprite = SpriteUtil,
@@ -75,6 +77,9 @@ local func = function(args)
 		allocator = allocator[1]
 	end
 	if allocator ~= nil and type(allocator) ~= "function" then error("bad allocator") end
+
+	-- ID Field / fromID
+	local idField = args.idField ~= false
 
 	-- Net type id
 	local netRegisterIndex = args.netRegisterIndex
@@ -272,15 +277,29 @@ local func = function(args)
 		out.lookup = lookup
 		out.meta = meta
 	end]]
-	local new, find, findAll
-	
+	local new, find, findAll, fromID
+
 	local classNew = static.new
+	local idMin, idMax = 0, 0
 	local allIds, idToObj
 	local new
+	
+	if idField then
+		function fromID(id)
+			if type(id) ~= "number" then typeCheckError(className .. ".fromID", 1, "id", "number", id) end
+			return new(id)
+		end
+
+		lookup.id = {get = function(self) return ids[self] end}
+		lookup.ID = lookup.id
+	end
+
 	if originIndex ~= nil then
 		allIds, idToObj = {vanilla = {}}, setmetatable({}, {__mode = "v"})
 		
 		function new(id, ...)
+			id = floor(id)
+			if id > idMax or id < idMin then return nil end
 			if not idToObj[id] then
 				idToObj[id] = classNew(id, ...)
 			end
@@ -346,7 +365,8 @@ local func = function(args)
 			GML.array_open(arrayName)
 			-- Vanilla is ASSUMED for all built ins
 			local t = allIds.vanilla
-			for i = 0, GML.array_length() - 1 do
+			idMax = GML.array_length() - 1
+			for i = 0, idMax do
 				local name = AnyTypeRet(GML.array_read_2(i, nameIndex))
 				t[name:lower()] = i
 			end
@@ -365,6 +385,7 @@ local func = function(args)
 				local context = GetModContext()
 				contextVerify(allIds, name, context, className, 1)
 				local id = allocator(context, name, ...)
+				if id > idMax then idMax = id end
 				contextInsert(allIds, name, context, id)
 				return new(id)
 			end, allocatorTypes)
@@ -374,13 +395,14 @@ local func = function(args)
 				local context = GetModContext()
 				contextVerify(allIds, name, context, className)
 				local id = allocator(context, name, ...)
+				if id > idMax then idMax = id end
 				contextInsert(allIds, name, context, id)
 				return new(id)
 			end
 		end
 	end
 
-	return setmetatable({new = ctor, find = find, findAll = findAll}, sharedMT), new, ids
+	return setmetatable({new = ctor, find = find, findAll = findAll, fromID = fromID}, sharedMT), new, ids
 end
 
 local function get(obj, index)
