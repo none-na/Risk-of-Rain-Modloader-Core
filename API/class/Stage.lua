@@ -234,7 +234,7 @@ do
 		stage_origin[new] = context
 		stage_subname[new] = ""
 		stage_list_interactable[new] = dsWrapper.list(interactable_list, "Interactable", RoRInteractable)
-		stage_map_interactable_rarity[new] = dsWrapper.map(AnyTypeRetrarity_map, "Interactable", RoRInteractable, nil, "number", nil, nil)
+		stage_map_interactable_rarity[new] = dsWrapper.map(rarity_map, "Interactable", RoRInteractable, nil, "number", nil, nil)
 		stage_list_enemy[new] = dsWrapper.list(enemy_list, "MonsterCard", RoRMonsterCard)
 		stage_list_rooms[new] = dsWrapper.list(room_list, "Room", GMRoom, nil, stageRoomAdded, stageRoomRemoved)
 
