@@ -109,8 +109,8 @@ do
 	function graphics.setBlendModeAdvanced(source, dest)
 		if type(source) ~= "string" then typeCheckError("graphics.setBlendModeAdvanced", 1, "source", "string", source) end
 		if type(dest) ~= "string" then typeCheckError("graphics.setBlendModeAdvanced", 2, "dest", "string", dest) end
-		if not extmodes[source] then error("'" .. mode .. "' is not a valid blend mode for graphics.setBlendModeAdvanced", 2) end
-		if not extmodes[dest] then error("'" .. mode .. "' is not a valid blend mode for graphics.setBlendModeAdvanced", 2) end
+		if not extmodes[source] then error("'" .. source .. "' is not a valid blend mode for graphics.setBlendModeAdvanced", 2) end
+		if not extmodes[dest] then error("'" .. dest .. "' is not a valid blend mode for graphics.setBlendModeAdvanced", 2) end
 		GML.gpu_set_blendmode_ext(extmodes[source], extmodes[dest])
 		set_blend = true
 	end
