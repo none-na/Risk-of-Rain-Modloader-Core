@@ -103,6 +103,8 @@ do
 		sourceColorInv = 4,
 		destColor = 9,
 		destColorInv = 10,
+		destAlpha = 7,
+		destAlphaInv = 8,
 		sourceAlphaSaturation = 11
 	}
 
