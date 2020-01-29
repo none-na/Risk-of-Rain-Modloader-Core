@@ -384,6 +384,7 @@ ffi.cdef[[
 	void net_packet_discard(double oldbuffer);
 	double net_find_object(double gmobj, double m_id);
 	void stage_goto(double stage);
+	double stage_load(const char* path);
 	double item_roll(double pool);
 	void item_drop(double instance, double type);
 	void item_set_cooldown(double item, float cooldown);

@@ -255,6 +255,50 @@ do
 	function Stage.new(name)
 		return new_stage("Stage.new", name)
 	end
+
+	--[==[
+	function Stage.load(filename)
+		if type(filename) ~= "string" then typeCheckError("Stage.load", 1, "filename", "string", filename) end
+		local context = GetModContext()
+
+		contextVerify(all_stages, filename, context, "Stage", 1)
+
+		local nid = GML.stage_load()
+		if nid == -1 then
+			local err = AnyTypeRet(GML.variable_global_get("_lua_error_next"))
+			error(tostring(err), 2)
+		end
+
+		local new = static.new(nid)
+		contextInsert(all_stages, filename, context, new)
+
+		local enemy_list = GML.ds_list_create()
+		local interactable_list = GML.ds_list_create()
+		local rarity_map = GML.ds_map_create()
+		local room_list = GML.ds_list_create()
+
+		stage_name[new] = name
+		stage_origin[new] = context
+		stage_subname[new] = ""
+		stage_list_interactable[new] = dsWrapper.list(interactable_list, "Interactable", RoRInteractable)
+		stage_map_interactable_rarity[new] = dsWrapper.map(AnyTypeRetrarity_map, "Interactable", RoRInteractable, nil, "number", nil, nil)
+		stage_list_enemy[new] = dsWrapper.list(enemy_list, "MonsterCard", RoRMonsterCard)
+		stage_list_rooms[new] = dsWrapper.list(room_list, "Room", GMRoom, nil, stageRoomAdded, stageRoomRemoved)
+
+		room_list_to_stage[stage_list_rooms[new]] = new
+		id_to_stage[nid] = new
+
+		GML.ds_map_replace(nid, AnyTypeArg("name"), AnyTypeArg(name))
+		GML.ds_map_replace(nid, AnyTypeArg("subname"), AnyTypeArg(""))
+		GML.ds_map_replace(nid, AnyTypeArg("enemies"), AnyTypeArg(enemy_list))
+		GML.ds_map_replace(nid, AnyTypeArg("rooms"), AnyTypeArg(room_list))
+		GML.ds_map_replace(nid, AnyTypeArg("chests"), AnyTypeArg(interactable_list))
+		GML.ds_map_replace(nid, AnyTypeArg("rarity"), AnyTypeArg(rarity_map))
+		GML.ds_map_replace(nid, AnyTypeArg("tp"), AnyTypeArg(6))
+
+		return new
+	end]==]
+
 	setmetatable(Stage, {__call = function(t, name)
 		return new_stage("Stage", name)
 	end})
