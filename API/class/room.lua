@@ -65,6 +65,7 @@ do
 
 		local nid = GML.room_duplicate(base_room)
 		local new = static.new(nid)
+        registerNetID("map", nid, context, name)
 		contextInsert(all_rooms, name, context, new)
 
 		room_name[new] = name
