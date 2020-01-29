@@ -433,7 +433,7 @@ local object_base_types = {
 		type = "actor"
 	},
 	enemy = {
-		parent = GML.asset_get_index("pEnemy"),
+		parent = GML.asset_get_index("pFlying"),
 		type = "actor"
 	},
 	bossclassic = {
