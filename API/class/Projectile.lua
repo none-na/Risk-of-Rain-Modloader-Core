@@ -158,39 +158,40 @@ do
 			
 			-- Collisions and collision callback triggering
 			-- The next line should be ran once or maybe twice for most projectiles
+			local current_collisions = projectile_current_collisions[projectileInstance]
 			for object,callbacks in pairs(projectile_collision_callbacks[new]) do
 				if object == "map" then
-					local previous_state = projectile_current_collisions[projectileInstance]["map"]
+					local previous_state = current_collisions["map"]
 					local current_state = projectileInstance:collidesMap(projectileInstance.x, projectileInstance.y)
 					if current_state then
 						if not previous_state then
 							triggerCollisionCallback(new, "entry", "map", projectileInstance)
 							if killed(projectileInstance) then return nil end
-							projectile_current_collisions[projectileInstance]["map"] = true
+							current_collisions["map"] = true
 						end
 						triggerCollisionCallback(new, "collide", "map", projectileInstance)
 						if killed(projectileInstance) then return nil end
 					elseif previous_state then
 						triggerCollisionCallback(new, "exit", "map", projectileInstance)
 						if killed(projectileInstance) then return nil end
-						projectile_current_collisions[projectileInstance]["map"] = nil
+						current_collisions["map"] = nil
 					end
 				else
 					for _,instance in ipairs(object:findAll()) do
-						local previous_state = projectile_current_collisions[projectileInstance][instance]
+						local previous_state = current_collisions[instance]
 						local current_state = projectileInstance:collidesWith(instance, projectileInstance.x, projectileInstance.y)
 						if current_state then
 							if not previous_state then
 								triggerCollisionCallback(new, "entry", object, projectileInstance, instance)
 								if killed(projectileInstance) then return nil end
-								projectile_current_collisions[projectileInstance][instance] = true
+								current_collisions[instance] = true
 							end
 							triggerCollisionCallback(new, "collide", object, projectileInstance, instance)
 							if killed(projectileInstance) then return nil end
 						elseif previous_state then
 							triggerCollisionCallback(new, "exit", object, projectileInstance, instance)
 							if killed(projectileInstance) then return nil end
-							projectile_current_collisions[projectileInstance][instance] = nil
+							current_collisions[instance] = nil
 						end
 					end
 				end
@@ -231,19 +232,28 @@ do
 	
 	-- Callbacks functions
 	local callbackNames = {
-		["create"]  = true,
-		["death"]   = true,
-		["step"]    = true,
-		["destroy"] = true,
-		["draw"]    = true,
+		["create"]  = true, -- projectileInstance
+		["death"]   = true, -- projectileInstance
+		["step"]    = true, -- projectileInstance
+		["destroy"] = true, -- projectileInstance
+		["draw"]    = true, -- projectileInstance
 	}
+	local callbacks_str
+	do
+		local names = {}
+		for name,_ in pairs(callbackNames) do
+			names[#names + 1] = string.format('"%s"', name)
+		end
+		callbacks_str = table.concat(names, " or ")
+	end
 	function lookup:addCallback(callback, bind)
 		if not childeren[self] then methodCallError("Projectile:addCallback", self) end
-		if type(callback) ~= "string"   then typeCheckError("Projectile:addCallback", 1, "callback", "string", callback) end
-		if type(bind)     ~= "function" then typeCheckError("Projectile:addCallback", 2, "bind",     "function",   bind) end
-		--???
-		if not callbackNames[callback] then error("Invalid callback name for Projectile") end
-		if projectile_callbacks[self][callback] == nil then projectile_callbacks[self][callback] = {} end
+		if type(callback) ~= "string"  then typeCheckError("Projectile:addCallback", 1, "callback", "string",      callback) end
+		if not callbackNames[callback] then typeCheckError("Projectile:addCallback", 1, "callback", callbacks_str, callback) end
+		if type(bind) ~= "function"    then typeCheckError("Projectile:addCallback", 2, "bind",     "function",        bind) end
+		if projectile_callbacks[self][callback] == nil then
+			projectile_callbacks[self][callback] = {}
+		end
 		table.insert(projectile_callbacks[self][callback], bind)
 	end
 
@@ -256,10 +266,19 @@ do
 		["exit"] = true,    -- projectileInstance, [otherInstance]
 		["collide"] = true, -- projectileInstance, [otherInstance]
 	}
+	local gcallbacks_str
+	do
+		local names = {}
+		for name,_ in pairs(groupCallbackNames) do
+			names[#names + 1] = string.format('"%s"', name)
+		end
+		gcallbacks_str = table.concat(names, " or ")
+	end
 	function lookup:addCollisionCallback(callback, objects, bind)
 		if not childeren[self] then methodCallError("Projectile:addCollisionCallback", self) end
-		if type(callback) ~= "string"   then typeCheckError("Projectile:addCollisionCallback", 1, "callback", "string", callback) end
-		if type(bind)     ~= "function" then typeCheckError("Projectile:addCollisionCallback", 3, "bind",     "function",   bind) end
+		if type(callback) ~= "string"       then typeCheckError("Projectile:addCollisionCallback", 1, "callback", "string",       callback) end
+		if not groupCallbackNames[callback] then typeCheckError("Projectile:addCollisionCallback", 1, "callback", gcallbacks_str, callback) end
+		if type(bind) ~= "function"         then typeCheckError("Projectile:addCollisionCallback", 3, "bind",     "function",         bind) end
 		
 		local objects_error
 		local valid_objects = {}
