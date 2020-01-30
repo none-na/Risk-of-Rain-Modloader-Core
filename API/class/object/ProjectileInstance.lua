@@ -77,9 +77,8 @@ do
 	function lookup:kill(deathSprite, signal)
 		if not childeren[self] then methodCallError("ProjectileInstance:fireExplosion", self) end
 		if typeOf(deathSprite) ~= "Sprite" and deathSprite ~= nil then typeCheckError("ProjectileInstance:kill", 1, "deathSprite", "Sprite or nil", deathSprite) end
-		if type(signal)        ~= "number" and signal      ~= nil then typeCheckError("ProjectileInstance:kill", 2, "signal",       "number or nil",     signal) end
-		--???
-		if signal and (signal <= 0) then error("Non-positive signal for ProjectileInstance:kill") end
+		if type(signal) ~= "number" and signal ~= nil then typeCheckError("ProjectileInstance:kill", 2, "signal", "positive number or nil", signal) end
+		if signal and (signal <= 0) then typeCheckError("ProjectileInstance:kill", 2, "signal", "postive number or nil", signal) end
 		verifyInstCall(ids[self])
 		
 		if deathSprite then
