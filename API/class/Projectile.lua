@@ -22,7 +22,7 @@ local object_to_projectile           = {}
 -- Callbacks
 local projectile_callbacks           = {}
 local projectile_collision_callbacks = {}
-local object_cache                   = {}
+--local object_cache                   = {}
 local projectile_current_collisions  = {}
 
 -- Environment
@@ -43,8 +43,8 @@ do
 	-- Triggers collision callbacks if they exist
 	local function triggerCollisionCallback(object, name, group, ...)
 		local pcc = projectile_collision_callbacks
-		if pcc[object] and pcc[object][group] and pcc[object][group][callback] then
-			for _,bind in ipairs(pcc[object][group][callback]) do
+		if pcc[object] and pcc[object][group] and pcc[object][group][name] then
+			for _,bind in ipairs(pcc[object][group][name]) do
 				bind(...)
 			end
 		end
@@ -73,7 +73,7 @@ do
 		projectile_death_sprite[new] = nil
 		projectile_object[new] = newObj
 		object_to_projectile[newObj] = new
-		object_cache[new] = {}
+		--object_cache[new] = {}
 		
 		newObj:addCallback("step", function(projectileInstance)	
 			-- Checking if the projectile should be dead and isn't
@@ -105,13 +105,16 @@ do
 			end
 			
 			-- Not running logic if the projectile is dead
-			if projectileInstance:get("dead") > 0 then return nil end
+			if (projectileInstance:get("dead") > 0) or projectileInstance:get("death_signal") then
+				return nil
+			end
 			
 			-- step callback
 			triggerCallback(new, "step", projectileInstance)
 			if projectileInstance:get("death_signal") then return nil end
 			
 			-- Collisions and callbacks
+			--[[
 			if object_cache[new] then
 				for _,object in ipairs(object_cache[new]) do
 					if not projectile_current_collisions[projectileInstance][object] then projectile_current_collisions[projectileInstance][object] = {} end
@@ -132,7 +135,9 @@ do
 					end
 				end
 			end
+			--]]
 			
+			--[[
 			if projectileInstance:collidesMap(projectileInstance.x, projectileInstance.y) then
 				if not projectile_current_collisions[projectileInstance]["map"] then
 					triggerCollisionCallback(new, "entry", "map", projectileInstance)
@@ -145,6 +150,46 @@ do
 				triggerCollisionCallback(new, "exit", "map", projectileInstance)
 				if projectileInstance:get("death_signal") then return nil end
 				projectile_current_collisions[projectileInstance]["map"] = nil
+			end
+			--]]
+			
+			-- Collisions and collision callback triggering
+			for object,callbacks in pairs(projectile_collision_callbacks[new]) do
+				if object == "map" then
+					local previous_state = projectile_current_collisions[projectileInstance]["map"]
+					local current_state = projectileInstance:collidesMap(projectileInstance.x, projectileInstance.y)
+					if current_state then
+						if not previous_state then
+							triggerCollisionCallback(new, "entry", "map", projectileInstance)
+							if projectileInstance:get("death_signal") then return nil end
+							projectile_current_collisions[projectileInstance]["map"] = true
+						end
+						triggerCollisionCallback(new, "collide", "map", projectileInstance)
+						if projectileInstance:get("death_signal") then return nil end
+					elseif previous_state then
+						triggerCollisionCallback(new, "exit", "map", projectileInstance)
+						if projectileInstance:get("death_signal") then return nil end
+						projectile_current_collisions[projectileInstance]["map"] = nil
+					end
+				else
+					for _,instance in ipairs(object:findAll()) do
+						local previous_state = projectile_current_collisions[projectileInstance][instance]
+						local current_state = projectileInstance:collidesWith(instance, projectileInstance.x, projectileInstance.y)
+						if current_state then
+							if not previous_state then
+								triggerCollisionCallback(new, "entry", object, projectileInstance, instance)
+								if projectileInstance:get("death_signal") then return nil end
+								projectile_current_collisions[projectileInstance][instance] = true
+							end
+							triggerCollisionCallback(new, "collide", object, projectileInstance, instance)
+							if projectileInstance:get("death_signal") then return nil end
+						elseif previous_state then
+							triggerCollisionCallback(new, "exit", object, projectileInstance, instance)
+							if projectileInstance:get("death_signal") then return nil end
+							projectile_current_collisions[projectileInstance][instance] = nil
+						end
+					end
+				end
 			end
 		end)
 		
@@ -197,59 +242,69 @@ do
 	end
 
 	local function objectFromName(name)
-		local name = string.lower(name)
 		local parent = ParentObject.find(name)
-		return parent and parent or Object.find(name)
+		return parent or Object.find(name)
 	end
 	local groupCallbackNames = {
-		["entry"] = true,   -- projectileInstance [otherInstance]
-		["exit"] = true,    -- projectileInstance [otherInstance]
-		["collide"] = true, -- projectileInstance [otherInstance]
+		["entry"] = true,   -- projectileInstance, [otherInstance]
+		["exit"] = true,    -- projectileInstance, [otherInstance]
+		["collide"] = true, -- projectileInstance, [otherInstance]
 	}
 	function lookup:addCollisionCallback(callback, objects, bind)
 		if not childeren[self] then methodCallError("Projectile:addCollisionCallback", self) end
 		if type(callback) ~= "string"   then typeCheckError("Projectile:addCollisionCallback", 1, "callback", "string", callback) end
 		if type(bind)     ~= "function" then typeCheckError("Projectile:addCollisionCallback", 3, "bind",     "function",   bind) end
 		
-		--???
-		-- This part needs a rework
-		local is_string = type(objects) == "string"
-		local is_map
-		if (not is_string) and (not (type(objects) == "table")) then typeCheckError("Projectile:addCollisionCallback", 2, "objects", "table or string", objects) end
-		local _objects = {}
-		if is_string then
-			local name = string.lower(objects)
-			if name == "map" then
-				is_map = true
+		local objects_error
+		local valid_objects = {}
+		if objects == "map" then
+			table.insert(valid_objects, "map")
+		elseif type(objects) == "string" then
+			local object = objectFromName(objects)
+			if object then
+				table.insert(valid_objects, object)
 			else
-				table.insert(_objects, objectFromName(objects))
+				objects_error = true
 			end
-		else
-			for k,v in pairs(objects) do
-				if type(v) == "string" then
-					table.insert(_objects, objectFromName(v))
-				elseif isA(v, "GMObjectBase") then
-					table.insert(_objects, v)
+		elseif isA(objects, "GMObjectBase") then
+			table.insert(valid_objects, objects)
+		elseif type(objects) == "table" then
+			for _,object in pairs(objects) do
+				if isA(object, "GMObjectBase") then
+					table.insert(valid_objects, object)
+				elseif type(object) == "string" then
+					local from_name = objectFromName(object)
+					if from_name then
+						table.insert(valid_objects, from_name)
+					else
+						objects_error = true
+						break
+					end
 				else
-					--???
-					-- Copied from typeCheckError
-					error(string.format("bad argument #%i ('%s') to '%s' (%s expected, got %s)", 2, "objects", "Projectile:addCollisionCallback", "table of objects or table of object names", "table with " .. typeOf(v)), 3)
+					objects_error = true
+					break
 				end
 			end
-		end
-		if not projectile_collision_callbacks[self] then projectile_collision_callbacks[self] = {} end
-		if is_map then
-			if not projectile_collision_callbacks[self]["map"] then projectile_collision_callbacks[self]["map"] = {} end
-			if not projectile_collision_callbacks[self]["map"][callback] then projectile_collision_callbacks[self]["map"][callback] = {} end
-			table.insert(projectile_collision_callbacks[self]["map"][callback], bind)
 		else
-			for k,v in ipairs(_objects) do
-				if not projectile_collision_callbacks[self][v] then projectile_collision_callbacks[self][v] = {} end
-				if not projectile_collision_callbacks[self][v][callback] then projectile_collision_callbacks[self][v][callback] = {} end
-				table.insert(projectile_collision_callbacks[self][v][callback], bind)
-				if not object_cache[self] then object_cache[self] = {} end
-				table.insert(object_cache[self], v)
+			objects_error = true
+		end
+		
+		if objects_error then
+			typeCheckError("Projectile:addCollisionCallback", 2, "objects", "\"map\" or GMObjectBase or table of GMObjectBases", objects)
+		end
+		
+		local pcc = projectile_collision_callbacks
+		if not pcc[self] then
+			pcc[self] = {}
+		end
+		for _,object in ipairs(valid_objects) do
+			if not pcc[self][object] then
+				pcc[self][object] = {}
 			end
+			if not pcc[self][object][callback] then
+				pcc[self][object][callback] = {}
+			end
+			table.insert(pcc[self][object][callback], bind)
 		end
 	end
 	
