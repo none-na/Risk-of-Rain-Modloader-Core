@@ -79,6 +79,22 @@ do
 		object_to_projectile[newObj] = new
 		--object_cache[new] = {}
 		
+		-- In case getObject is used to spawn the projectile (which it shouldn't be)
+		newObj:addCallback("create", function(projectileInstance)
+			if not projectile_current_collisions[projectileInstance] then
+				projectileInstance
+				:set("parent",    projectileInstance:get("parent")    or -1)
+				:set("team",      projectileInstance:get("team")      or "neutral")
+				:set("damage",    projectileInstance:get("damage")    or 0)
+				:set("dead",      projectileInstance:get("dead")      or 0)
+				:set("vaccel",    projectileInstance:get("vaccel")    or 0)
+				:set("haccel",    projectileInstance:get("haccel")    or 0)
+				:set("direction", projectileInstance:get("direction") or 90 * (1 - projectileInstance.xscale))
+				
+				projectile_current_collisions[projectileInstance] = {}
+			end
+		end)
+		
 		newObj:addCallback("step", function(projectileInstance)	
 			-- Checking if the projectile should be dead and isn't
 			local _signal = projectileInstance:get("death_signal")

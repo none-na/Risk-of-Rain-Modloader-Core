@@ -11,6 +11,26 @@ meta.__tostring = __tostring_default_instance
 GMInstance.ProjectileInstance = static
 
 do
+	-- Reduces argument count, handles knockback direction and specific_target
+	local DISTANCE = 16
+	function lookup:damage(instance, damage, properties)
+		if not childeren[self] then methodCallError("ProjectileInstance:damage", self) end
+		if not isA(instance, "ActorInstance") then typeCheckError("ProjectileInstance:damage", 1, "instance", "ActorInstance", instance) end
+		if type(damage) ~= "number"           then typeCheckError("ProjectileInstance:damage", 2, "damage",   "number",          damage) end
+		if type(properties) ~= "number" and properties ~= nil then typeCheckError("ProjectileInstance:damage", 3, "properties", "number or nil", properties) end
+		
+		local direction = math.sign(instance.x - self.x)
+		return self:fireBullet(
+			instance.x - direction * DISTANCE,
+			instance.y,
+			90 * (1 - direction),
+			DISTANCE,
+			damage,
+			nil,
+			properties
+		):set("specific_target", instance.id)
+	end
+	
 	-- Fire functions
 	function lookup:fireBullet(x, y, direction, distance, damage, hitSprite, properties)
 		if not childeren[self] then methodCallError("ProjectileInstance:fireBullet", self) end
