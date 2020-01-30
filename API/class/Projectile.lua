@@ -31,26 +31,22 @@ mods.modenv.Projectile = Projectile
 
 do
 	-- Triggers normal callbacks if they exist
-	local function triggerCallback(self, callback, ...)
-		local callbacks = projectile_callbacks[self]
-		if not callbacks then return nil end
-		callbacks = callbacks[callback]
-		if not callbacks then return nil end
-		for k,v in ipairs(callbacks) do
-			v(...)
+	local function triggerCallback(object, name, ...)
+		local pc = projectile_callbacks
+		if pc[object] and pc[object][name] then
+			for _,bind in ipairs(pc[object][name]) do
+				bind(...)
+			end
 		end
 	end
 	
 	-- Triggers collision callbacks if they exist
-	local function triggerCollisionCallback(self, callback, group, ...)
-		local callbacks = projectile_collision_callbacks[self]
-		if not callbacks then return nil end
-		callbacks = callbacks[group]
-		if not callbacks then return nil end
-		callbacks = callbacks[callback]
-		if not callbacks then return nil end
-		for k,v in ipairs(callbacks) do
-			v(...)
+	local function triggerCollisionCallback(object, name, group, ...)
+		local pcc = projectile_collision_callbacks
+		if pcc[object] and pcc[object][group] and pcc[object][group][callback] then
+			for _,bind in ipairs(pcc[object][group][callback]) do
+				bind(...)
+			end
 		end
 	end
 
