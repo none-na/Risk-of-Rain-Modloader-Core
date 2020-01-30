@@ -14,8 +14,8 @@ do
 	-- Fire functions
 	function lookup:fireBullet(x, y, direction, distance, damage, hitSprite, properties)
 		if not childeren[self] then methodCallError("ProjectileInstance:fireBullet", self) end
-		if type(x)           ~= "number" then typeCheckError("ProjectileInstance:fireBullet", 1, "x",         "number",         x) end
-		if type(y)           ~= "number" then typeCheckError("ProjectileInstance:fireBullet", 2, "y",         "number",         y) end
+		if type(x)           ~= "number" and x ~= nil then typeCheckError("ProjectileInstance:fireBullet", 1, "x", "number or nil", x) end
+		if type(y)           ~= "number" and y ~= nil then typeCheckError("ProjectileInstance:fireBullet", 2, "y", "number or nil", y) end
 		if type(direction)   ~= "number" then typeCheckError("ProjectileInstance:fireBullet", 3, "direction", "number", direction) end
 		if type(distance)    ~= "number" then typeCheckError("ProjectileInstance:fireBullet", 4, "distance",  "number",  distance) end
 		if type(damage)      ~= "number" then typeCheckError("ProjectileInstance:fireBullet", 5, "damage",    "number",    damage) end
@@ -23,6 +23,7 @@ do
 		if type(properties)  ~= "number" and properties ~= nil then typeCheckError("ProjectileInstance:fireBullet", 7, "properties", "number or nil", properties) end
 		verifyInstCall(ids[self])
 		
+		local x, y = x or self.x, y or self.y
 		if isA(Object.findInstance(self:get("parent")), "ActorInstance") then
 			local ths = hitSprite and SpriteUtil.toID(hitSprite) or -1
 			return iwrap(GML.fire_bullet(self:get("parent"), x, y, direction, distance, damage, ths, properties or 0))
@@ -33,8 +34,8 @@ do
 
 	function lookup:fireExplosion(x, y, width, height, damage, explosionSprite, hitSprite, properties)
 		if not childeren[self] then methodCallError("ProjectileInstance:fireExplosion", self) end
-		if type(x)                 ~= "number" then typeCheckError("ProjectileInstance:fireExplosion", 1, "x",      "number",      x) end
-		if type(y)                 ~= "number" then typeCheckError("ProjectileInstance:fireExplosion", 2, "y",      "number",      y) end
+		if type(x)                 ~= "number" and x ~= nil then typeCheckError("ProjectileInstance:fireExplosion", 1, "x", "number or nil", x) end
+		if type(y)                 ~= "number" and y ~= nil then typeCheckError("ProjectileInstance:fireExplosion", 2, "y", "number or nil", y) end
 		if type(width)             ~= "number" then typeCheckError("ProjectileInstance:fireExplosion", 3, "width",  "number",  width) end
 		if type(height)            ~= "number" then typeCheckError("ProjectileInstance:fireExplosion", 4, "height", "number", height) end
 		if type(damage)            ~= "number" then typeCheckError("ProjectileInstance:fireExplosion", 5, "damage", "number", damage) end
@@ -43,6 +44,7 @@ do
 		if type(properties)        ~= "number" and properties      ~= nil then typeCheckError("ProjectileInstance:fireExplosion", 8, "properties",      "number or nil",      properties) end
 		verifyInstCall(ids[self])
 		
+		local x, y = x or self.x, y or self.y
 		if isA(Object.findInstance(self:get("parent")), "ActorInstance") then
 			local tes, ths = (explosionSprite and SpriteUtil.toID(explosionSprite) or -1), (hitSprite and SpriteUtil.toID(hitSprite) or -1)
 			return iwrap(GML.fire_explosion(self:get("parent"), x, y, width, height, damage, tes, ths, properties or 0))
