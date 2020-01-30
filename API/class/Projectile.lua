@@ -49,6 +49,10 @@ do
 			end
 		end
 	end
+	
+	local function killed(instance)
+		return (not instance:isValid()) or (instance:get("dead") > 0) or (instance:get("death_signal") ~= nil)
+	end
 
 	-- New projectile
 	local function projectile_new(name)
@@ -105,13 +109,11 @@ do
 			end
 			
 			-- Not running logic if the projectile is dead
-			if (projectileInstance:get("dead") > 0) or projectileInstance:get("death_signal") then
-				return nil
-			end
+			if killed(projectileInstance) then return nil end
 			
 			-- step callback
 			triggerCallback(new, "step", projectileInstance)
-			if projectileInstance:get("death_signal") then return nil end
+			if killed(projectileInstance) then return nil end
 			
 			-- Collisions and callbacks
 			--[[
@@ -154,6 +156,7 @@ do
 			--]]
 			
 			-- Collisions and collision callback triggering
+			-- The next line should be ran once or maybe twice for most projectiles
 			for object,callbacks in pairs(projectile_collision_callbacks[new]) do
 				if object == "map" then
 					local previous_state = projectile_current_collisions[projectileInstance]["map"]
@@ -161,14 +164,14 @@ do
 					if current_state then
 						if not previous_state then
 							triggerCollisionCallback(new, "entry", "map", projectileInstance)
-							if projectileInstance:get("death_signal") then return nil end
+							if killed(projectileInstance) then return nil end
 							projectile_current_collisions[projectileInstance]["map"] = true
 						end
 						triggerCollisionCallback(new, "collide", "map", projectileInstance)
-						if projectileInstance:get("death_signal") then return nil end
+						if killed(projectileInstance) then return nil end
 					elseif previous_state then
 						triggerCollisionCallback(new, "exit", "map", projectileInstance)
-						if projectileInstance:get("death_signal") then return nil end
+						if killed(projectileInstance) then return nil end
 						projectile_current_collisions[projectileInstance]["map"] = nil
 					end
 				else
@@ -178,14 +181,14 @@ do
 						if current_state then
 							if not previous_state then
 								triggerCollisionCallback(new, "entry", object, projectileInstance, instance)
-								if projectileInstance:get("death_signal") then return nil end
+								if killed(projectileInstance) then return nil end
 								projectile_current_collisions[projectileInstance][instance] = true
 							end
 							triggerCollisionCallback(new, "collide", object, projectileInstance, instance)
-							if projectileInstance:get("death_signal") then return nil end
+							if killed(projectileInstance) then return nil end
 						elseif previous_state then
 							triggerCollisionCallback(new, "exit", object, projectileInstance, instance)
-							if projectileInstance:get("death_signal") then return nil end
+							if killed(projectileInstance) then return nil end
 							projectile_current_collisions[projectileInstance][instance] = nil
 						end
 					end
