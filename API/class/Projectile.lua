@@ -102,7 +102,8 @@ do
 				end
 			end
 			if projectileInstance:get("dead") > 0 then
-				if (not projectileInstance:get("death_sprite")) or (_life <= (-(((projectileInstance.sprite or { frames = 1 }).frames) / (projectileInstance.spriteSpeed or 1)) - 1)) then
+				local frames = projectileInstance.sprite and projectileInstance.sprite.frames or 1
+				if (not projectileInstance:get("death_sprite")) or (_life <= (-(frames / (projectileInstance.spriteSpeed or 1)) - 1)) then
 					projectileInstance:destroy()
 					return nil
 				end
@@ -198,12 +199,14 @@ do
 		
 		newObj:addCallback("draw", function(projectileInstance)
 			triggerCallback(new, "draw", projectileInstance)
+			if killed(projectileInstance) then return nil end
 		end)
 		
 		newObj:addCallback("destroy", function(projectileInstance)
 			-- Clean-up
 			projectile_current_collisions[projectileInstance] = nil
 			triggerCallback(new, "destroy", projectileInstance)
+			if killed(projectileInstance) then return nil end
 		end)
 		
 		return new

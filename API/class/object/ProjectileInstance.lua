@@ -86,7 +86,7 @@ do
 	}
 	function lookup:set(varName, value)
 		if allowed_types[varName]    and type(value) ~= allowed_types[varName]    then typeCheckError("ProjectileInstance:set", 2, "value", allowed_types[varName],              value) end
-		if prohibited_types[varName] and type(value) == prohibited_types[varName] then typeCheckError("ProjectileInstance:set", 2, "value", "not " .. prohibited_types[varName], value) end
+		if prohibited_types[varName] and type(value) == prohibited_types[varName] then typeCheckError("ProjectileInstance:set", 2, "value", "non-" .. prohibited_types[varName], value) end
 		if varName == "vaccel" then
 			_set(self,"gravity", math.sqrt(value^2 + (self:get("haccel") or 0)^2))
 			_set(self,"gravity_direction", math.deg(math.atan2(-value, self:get("haccel") or 0)))
